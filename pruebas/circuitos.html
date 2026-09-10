@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voltio · banco de circuitos</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <style>
+    body { padding: 20px; }
+    .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); gap: 16px; max-width: 1500px; margin: 0 auto; }
+    .caso { background: var(--superficie); border: 1px solid var(--borde); border-radius: 14px; padding: 10px; }
+    .caso h3 { font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-suave); margin: 0 0 6px; }
+    .caso svg { width: 100%; height: auto; }
+    /* Caja de recorte: cualquier trazo que se salga del viewBox se ve enseguida. */
+    .caso.marco svg { outline: 1px dashed var(--mal); outline-offset: -1px; }
+  </style>
+</head>
+<body>
+  <h1>Banco visual de circuitos</h1>
+  <p class="prosa">Cada caso se dibuja con el borde del <code>viewBox</code> marcado: si algo
+     se sale o se monta, se nota de inmediato.</p>
+  <div class="rejilla" id="rejilla"></div>
+
+  <script type="module">
+    import { construirCircuito } from '../js/circuito.js';
+
+    const casos = [
+      ['Serie · 1 R', { tipo: 'serie', fuente: { etiqueta: '9 V' },
+        ramas: [{ nombre: 'R', valor: '220 Ω' }], corriente: { etiqueta: 'I' } }],
+      ['Serie · 2 R + I', { tipo: 'serie', fuente: { etiqueta: '12 V' },
+        ramas: [{ nombre: 'R₁', valor: '330 Ω' }, { nombre: 'R₂', valor: '470 Ω' }],
+        corriente: { etiqueta: 'I = 10 mA' } }],
+      ['Serie · 3 R', { tipo: 'serie', fuente: { etiqueta: '9 V' },
+        ramas: [{ nombre: 'R₁', valor: '330 Ω' }, { nombre: 'R₂', valor: '470 Ω' }, { nombre: 'R₃', valor: '1 kΩ' }] }],
+      ['Serie · 3 R + I (va abajo)', { tipo: 'serie', fuente: { etiqueta: '9 V' },
+        ramas: [{ nombre: 'R₁', valor: '330 Ω' }, { nombre: 'R₂', valor: '470 Ω' }, { nombre: 'R₃', valor: '1 kΩ' }],
+        corriente: { etiqueta: 'I = 5 mA' } }],
+      ['Serie · hueco en R₂', { tipo: 'serie', fuente: { etiqueta: '10 V' },
+        ramas: [{ nombre: 'R₁', valor: '150 Ω' }, { nombre: 'R₂', hueco: { id: 'a', unidad: 'Ω' }, destacado: true }],
+        corriente: { etiqueta: 'I = 20 mA' } }],
+      ['Serie · hueco en la fuente', { tipo: 'serie', fuente: { hueco: { id: 'b', unidad: 'V' } },
+        ramas: [{ nombre: 'R₁', valor: '330 Ω' }, { nombre: 'R₂', valor: '470 Ω' }],
+        corriente: { etiqueta: 'I = 10 mA' } }],
+      ['Serie · 5 R (usa riel derecho)', { tipo: 'serie', fuente: { etiqueta: '24 V' },
+        ramas: [{ nombre: 'R₁', valor: '1 kΩ' }, { nombre: 'R₂', valor: '2 kΩ' }, { nombre: 'R₃', valor: '3 kΩ' },
+                { nombre: 'R₄', valor: '4 kΩ' }, { nombre: 'R₅', valor: '5 kΩ' }] }],
+      ['Serie · abierto', { tipo: 'serie', fuente: { etiqueta: '9 V' },
+        ramas: [{ nombre: 'R', valor: '100 Ω' }], corriente: { velocidad: 0 }, nota: 'circuito abierto' }],
+
+      ['Paralelo · 2 ramas', { tipo: 'paralelo', fuente: { etiqueta: '12 V' },
+        ramas: [{ nombre: 'R₁', valor: '100 Ω' }, { nombre: 'R₂', valor: '100 Ω' }] }],
+      ['Paralelo · hueco última rama', { tipo: 'paralelo', fuente: { etiqueta: '24 V' },
+        ramas: [{ nombre: 'R₁', valor: '1.2 kΩ' }, { nombre: 'R₂', hueco: { id: 'c', unidad: 'Ω' }, destacado: true }] }],
+      ['Paralelo · 3 ramas', { tipo: 'paralelo', fuente: { etiqueta: '15 V' },
+        ramas: [{ nombre: 'R₁', valor: '470 Ω' }, { nombre: 'R₂', valor: '680 Ω' }, { nombre: 'R₃', valor: '1 kΩ' }] }],
+      ['Paralelo · 1 rama + I', { tipo: 'paralelo', fuente: { etiqueta: '5 V' },
+        ramas: [{ nombre: 'R', valor: '50 Ω' }], corriente: { etiqueta: 'I' } }],
+
+      ['Mixto', { tipo: 'mixto', fuente: { etiqueta: '12 V' },
+        serie: [{ nombre: 'R₁', valor: '100 Ω' }],
+        paralelo: [{ nombre: 'R₂', valor: '200 Ω' }, { nombre: 'R₃', valor: '200 Ω' }] }],
+      ['Mixto · hueco + I', { tipo: 'mixto', fuente: { etiqueta: '12 V' },
+        serie: [{ nombre: 'R₁', valor: '100 Ω' }],
+        paralelo: [{ nombre: 'R₂', hueco: { id: 'd', unidad: 'Ω' }, destacado: true }, { nombre: 'R₃', valor: '300 Ω' }],
+        corriente: { etiqueta: 'I = 60 mA' } }],
+      ['Mixto · dos huecos', { tipo: 'mixto', fuente: { hueco: { id: 'e', unidad: 'V' } },
+        serie: [{ nombre: 'R₁', hueco: { id: 'f', unidad: 'Ω' } }],
+        paralelo: [{ nombre: 'R₂', valor: '400 Ω' }, { nombre: 'R₃', valor: '400 Ω' }],
+        corriente: { etiqueta: 'I = 50 mA' } }],
+    ];
+
+    const rejilla = document.getElementById('rejilla');
+    for (const [nombre, spec] of casos) {
+      const caja = document.createElement('div');
+      caja.className = 'caso marco';
+      const h = document.createElement('h3');
+      h.textContent = nombre;
+      caja.append(h, construirCircuito(spec));
+      rejilla.appendChild(caja);
+    }
+
+    /**
+     * Reporta pares de etiquetas que se pisan. Se mira solo texto y campos:
+     * que dos cables se crucen es normal, que dos rotulos se monten no.
+     */
+    window.colisiones = () => [...document.querySelectorAll('.caso')].flatMap((caja) => {
+      const nombre = caja.querySelector('h3').textContent;
+      const etiquetas = [...caja.querySelectorAll('svg text, svg foreignObject')]
+        .map((n) => {
+          let b; try { b = n.getBBox(); } catch { return null; }
+          if (!b || (b.width === 0 && b.height === 0)) return null;
+          return { n, b, txt: (n.textContent || '?').trim().slice(0, 16) };
+        }).filter(Boolean);
+
+      const choques = [];
+      for (let i = 0; i < etiquetas.length; i++) {
+        for (let j = i + 1; j < etiquetas.length; j++) {
+          const a = etiquetas[i], c = etiquetas[j];
+          // Margen negativo: se tolera que dos cajas se rocen en el borde.
+          const solapa = a.b.x < c.b.x + c.b.width - 2 && c.b.x < a.b.x + a.b.width - 2 &&
+                         a.b.y < c.b.y + c.b.height - 2 && c.b.y < a.b.y + a.b.height - 2;
+          if (solapa) choques.push(`${nombre} → "${a.txt}" ✕ "${c.txt}"`);
+        }
+      }
+      return choques;
+    });
+
+    // Reporta cualquier elemento cuyo dibujo se salga del viewBox declarado.
+    window.desbordes = () => [...document.querySelectorAll('.caso')].flatMap((caja) => {
+      const svg = caja.querySelector('svg');
+      const [, , W, H] = svg.getAttribute('viewBox').split(' ').map(Number);
+      return [...svg.querySelectorAll('text, foreignObject, path, rect, line, polyline')]
+        .map((n) => {
+          let b; try { b = n.getBBox(); } catch { return null; }
+          if (b.width === 0 && b.height === 0) return null;
+          const fuera = b.x < -1 || b.y < -1 || b.x + b.width > W + 1 || b.y + b.height > H + 1;
+          if (!fuera) return null;
+          return `${caja.querySelector('h3').textContent} → <${n.tagName}${n.textContent ? ' "' + n.textContent.slice(0, 18) + '"' : ''}> ` +
+                 `x:${b.x.toFixed(0)}..${(b.x + b.width).toFixed(0)} y:${b.y.toFixed(0)}..${(b.y + b.height).toFixed(0)} (viewBox ${W}x${H})`;
+        }).filter(Boolean);
+    });
+  </script>
+</body>
+</html>
