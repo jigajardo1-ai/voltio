@@ -1,0 +1,2 @@
+# Normaliza saltos de linea: LF en el repo, sin importar el sistema de quien clone.
+* text=auto eol=lf
