@@ -142,7 +142,14 @@ def main() -> int:
     js = construir_js()
     DIST.mkdir(exist_ok=True)
 
-    envoltura = f"<style>\n{css}\n</style>\n" \
+    # Unico recurso de red del bundle. El CSP de Artifacts admite Google Fonts,
+    # y la pila de respaldo en el CSS cubre el caso de que no cargue.
+    fuentes = ('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+               '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
+               'family=IBM+Plex+Mono:wght@400;600&'
+               'family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">\n')
+
+    envoltura = fuentes + f"<style>\n{css}\n</style>\n" \
                 '<div id="app"><noscript>Voltio necesita JavaScript.</noscript></div>\n' \
                 f"<script>\n(function(){{\n'use strict';\n{js}\n}})();\n</script>\n"
 
