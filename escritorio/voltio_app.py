@@ -81,6 +81,91 @@ def buscar_actualizacion(datos: Path) -> None:
         pass
 
 
+def _icono() -> Path:
+    return Path(__file__).resolve().parent.parent / 'iconos' / 'voltio.ico'
+
+
+def identidad_en_barra_de_tareas() -> None:
+    """Hace que Windows trate esto como Voltio y no como 'Python'.
+
+    Sin esto la ventana se agrupa bajo el interprete en la barra de tareas y
+    hereda su icono. Hay que llamarlo antes de crear la ventana.
+    """
+    if sys.platform != 'win32':
+        return
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('Voltio.Escritorio')
+    except Exception:
+        pass
+
+
+def poner_icono_ventana() -> bool:
+    """Cambia el icono de la ventana por el rayo de la app.
+
+    pywebview no expone el icono en Windows, asi que la ventana se queda con el
+    de pythonw.exe. Se arregla mandandole WM_SETICON por la API del sistema.
+    Devuelve True cuando encontro una ventana y se lo puso.
+    """
+    if sys.platform != 'win32':
+        return True
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        ico = _icono()
+        if not ico.exists():
+            return True                       # sin icono no hay nada que reintentar
+
+        user32 = ctypes.windll.user32
+        kernel32 = ctypes.windll.kernel32
+        WM_SETICON, ICON_SMALL, ICON_BIG = 0x0080, 0, 1
+        IMAGE_ICON, LR_LOADFROMFILE = 1, 0x0010
+
+        # Se cargan dos tamanos: el chico va en la barra de titulo y el grande
+        # en Alt+Tab y la barra de tareas.
+        medidas = ((49, 50, ICON_SMALL), (11, 12, ICON_BIG))
+        cargados = []
+        for mx, my, cual in medidas:
+            h = user32.LoadImageW(None, str(ico), IMAGE_ICON,
+                                  user32.GetSystemMetrics(mx),
+                                  user32.GetSystemMetrics(my), LR_LOADFROMFILE)
+            if h:
+                cargados.append((cual, h))
+        if not cargados:
+            return True
+
+        # Solo las ventanas de este proceso: buscarlas por titulo podria acertarle
+        # a la ventana de otro programa que se llame igual.
+        pid_propio = kernel32.GetCurrentProcessId()
+        ventanas: list[int] = []
+
+        @ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
+        def recorrer(hwnd, _lparam):
+            pid = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+            if pid.value == pid_propio and user32.IsWindowVisible(hwnd):
+                ventanas.append(hwnd)
+            return True
+
+        user32.EnumWindows(recorrer, 0)
+        for hwnd in ventanas:
+            for cual, h in cargados:
+                user32.SendMessageW(hwnd, WM_SETICON, cual, h)
+        return bool(ventanas)
+    except Exception:
+        return True                           # el icono no vale romper la app
+
+
+def al_abrir() -> None:
+    """La ventana todavia no existe cuando pywebview arranca: hay que esperarla."""
+    import time
+    for _ in range(40):                       # se rinde a los ~4 s
+        time.sleep(0.1)
+        if poner_icono_ventana():
+            return
+
+
 class Silencioso(SimpleHTTPRequestHandler):
     """El de siempre, pero sin una linea de log por peticion."""
 
@@ -127,6 +212,8 @@ def main() -> int:
     servidor = ThreadingHTTPServer(('127.0.0.1', puerto), manejador)
     threading.Thread(target=servidor.serve_forever, daemon=True).start()
 
+    identidad_en_barra_de_tareas()            # antes de crear la ventana
+
     webview.create_window(
         APP,
         f'http://127.0.0.1:{puerto}/{fuente.name}',
@@ -140,7 +227,7 @@ def main() -> int:
     #     borra localStorage al salir.
     #   - storage_path fijo: el perfil del WebView guarda ahi el avance, asi que
     #     cambiar esta ruta equivale a empezar de cero.
-    webview.start(private_mode=False, storage_path=str(datos))
+    webview.start(al_abrir, private_mode=False, storage_path=str(datos))
     return 0
 
 

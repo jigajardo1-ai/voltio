@@ -190,6 +190,11 @@ Detalles que parecen menores y deciden si el progreso sobrevive:
 
 - El acceso directo apunta a `pythonw.exe`, no a `python.exe`: el segundo arrastra una
   consola negra detrás de la ventana.
+- El icono de la ventana se pone a mano con `WM_SETICON`. pywebview no lo expone en
+  Windows, así que la ventana heredaría el icono de `pythonw.exe` y saldría un logo de
+  Python en la barra de título. Se cargan dos tamaños: el chico para la barra de título y
+  el grande para Alt+Tab. Y `SetCurrentProcessExplicitAppUserModelID` evita que la barra de
+  tareas agrupe la ventana bajo el intérprete.
 - La app se sirve desde `127.0.0.1` con **puerto fijo**, no desde `file://`. El progreso se
   guarda en `localStorage`, que va por origen: un puerto distinto en cada arranque sería un
   origen distinto y el avance se perdería al cerrar.
