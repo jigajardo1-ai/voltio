@@ -1,0 +1,3842 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Voltio — Aprende electricidad</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9889;</text></svg>">
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* ── Tokens ──────────────────────────────────────────────────────────────── */
+
+:root {
+  --fondo: #f4f6f9;
+  --superficie: #ffffff;
+  --superficie-2: #eef1f6;
+  --borde: #dde3ec;
+  --borde-fuerte: #c3ccda;
+  --texto: #16202c;
+  --texto-suave: #5c6a7d;
+
+  --marca: #f0a500;
+  --marca-osc: #c98700;
+  --marca-suave: #fff4dc;
+
+  --ok: #47ba3f;
+  --ok-osc: #369130;
+  --ok-suave: #e8f7e6;
+  --mal: #e04a4f;
+  --mal-osc: #b53a3e;
+  --mal-suave: #fdeced;
+
+  --azul: #3b82f6;
+  --violeta: #8b5cf6;
+  --verde: #10b981;
+  --rojo: #ef4444;
+  --ambar: #f0a500;
+
+  --cable: #55637a;
+  --electron: #f0a500;
+
+  --r: 16px;
+  --sombra: 0 1px 2px rgba(20, 30, 45, .06), 0 4px 14px rgba(20, 30, 45, .06);
+  --fuente: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #10151d;
+    --superficie: #182029;
+    --superficie-2: #212b37;
+    --borde: #2b3644;
+    --borde-fuerte: #3c4a5c;
+    --texto: #e8eef6;
+    --texto-suave: #9aa8bb;
+    --marca-suave: #33280f;
+    --ok-suave: #16301a;
+    --mal-suave: #351a1d;
+    --cable: #8fa0b8;
+    --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+  }
+}
+
+:root[data-theme="dark"] {
+  --fondo: #10151d;
+  --superficie: #182029;
+  --superficie-2: #212b37;
+  --borde: #2b3644;
+  --borde-fuerte: #3c4a5c;
+  --texto: #e8eef6;
+  --texto-suave: #9aa8bb;
+  --marca-suave: #33280f;
+  --ok-suave: #16301a;
+  --mal-suave: #351a1d;
+  --cable: #8fa0b8;
+  --sombra: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 .4em; letter-spacing: -.015em; }
+h1 { font-size: 1.7rem; }
+h2 { font-size: 1.3rem; }
+p { margin: 0 0 .8em; }
+sub, sup { line-height: 0; }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+
+/* Botones con "peso": el borde inferior grueso hace de sombra fisica. */
+.btn {
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 26px;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  transition: transform .06s, filter .15s;
+}
+.btn.principal {
+  background: var(--marca);
+  color: #1d1500;
+  box-shadow: 0 4px 0 var(--marca-osc);
+  min-width: 180px;
+}
+.btn.principal:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--marca-osc); }
+.btn.principal:disabled { background: var(--superficie-2); color: var(--texto-suave); box-shadow: 0 4px 0 var(--borde); }
+.btn.secundario {
+  background: var(--superficie);
+  border: 2px solid var(--borde-fuerte);
+  box-shadow: 0 3px 0 var(--borde);
+  padding: 11px 20px;
+  text-transform: none;
+}
+.btn.peligro { background: var(--mal); color: #fff; box-shadow: 0 4px 0 var(--mal-osc); text-transform: none; padding: 11px 20px; }
+.btn:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+
+.prosa { color: var(--texto); }
+.prosa ol, .prosa ul { margin: 0 0 .8em; padding-left: 1.3em; }
+.prosa li { margin-bottom: .3em; }
+
+.formula {
+  font-family: var(--mono);
+  font-size: 1.08rem;
+  font-weight: 700;
+  text-align: center;
+  background: var(--superficie-2);
+  border-radius: 10px;
+  padding: 12px 10px;
+  margin: 12px 0;
+}
+.dato {
+  border-left: 4px solid var(--marca);
+  background: var(--marca-suave);
+  padding: 10px 14px;
+  border-radius: 0 10px 10px 0;
+  font-size: .95rem;
+}
+
+/* ── Barra superior ──────────────────────────────────────────────────────── */
+
+.barra-sup {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px max(16px, env(safe-area-inset-left)) 12px 16px;
+  background: color-mix(in srgb, var(--superficie) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--borde);
+}
+.marca { display: flex; align-items: center; gap: 7px; font-weight: 900; font-size: 1.2rem; letter-spacing: -.02em; }
+.marca .rayo { color: var(--marca); filter: drop-shadow(0 0 8px rgba(240, 165, 0, .5)); }
+.stats { margin-left: auto; display: flex; gap: 14px; }
+.stat { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; font-size: .95rem; }
+.stat .ic { font-style: normal; }
+.stat:nth-child(3) .ic { color: var(--mal); }
+.icono-btn {
+  background: none; border: 0; font-size: 1.25rem; padding: 6px 9px;
+  border-radius: 10px; color: var(--texto-suave);
+}
+.icono-btn:hover { background: var(--superficie-2); }
+
+/* ── Mapa ────────────────────────────────────────────────────────────────── */
+
+.mapa { max-width: 760px; margin: 0 auto; padding: 24px 18px 80px; }
+.saludo { text-align: center; margin-bottom: 30px; }
+.saludo p { color: var(--texto-suave); margin: 0; }
+
+.modulo { margin-bottom: 42px; }
+
+.mod-cab {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--r);
+  color: #fff;
+  box-shadow: var(--sombra);
+}
+.mod-cab.ambar   { background: linear-gradient(135deg, #f0a500, #e08700); }
+.mod-cab.azul    { background: linear-gradient(135deg, #4f8ef7, #2f6ad6); }
+.mod-cab.violeta { background: linear-gradient(135deg, #9b6cf8, #7746e0); }
+.mod-cab.verde   { background: linear-gradient(135deg, #19c58c, #0f9b6c); }
+.mod-cab.rojo    { background: linear-gradient(135deg, #f2635f, #d13f3b); }
+.mod-cab.cerrado { filter: grayscale(.75) brightness(.9); }
+.mod-icono { font-size: 1.9rem; line-height: 1; }
+.mod-txt { flex: 1; min-width: 0; }
+.mod-txt h2 { margin: 0; font-size: 1.15rem; }
+.mod-txt p { margin: 0; font-size: .88rem; opacity: .9; }
+.mod-prog { text-align: right; font-size: .8rem; font-weight: 800; min-width: 74px; }
+.mod-barra { height: 8px; background: rgba(255, 255, 255, .32); border-radius: 99px; overflow: hidden; margin-bottom: 4px; }
+.mod-barra i { display: block; height: 100%; background: #fff; border-radius: 99px; transition: width .5s; }
+.chip { background: rgba(255, 255, 255, .25); padding: 4px 11px; border-radius: 99px; font-size: .78rem; font-weight: 800; }
+
+/* Camino serpenteante de lecciones */
+.camino { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 26px 0 6px; }
+.nodo {
+  position: relative;
+  transform: translateX(var(--desfase, 0));
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: none; border: 0; padding: 10px 6px 14px;
+  transition: transform .15s;
+}
+.nodo:not(:last-child)::after {
+  content: ""; position: absolute; left: 50%; top: 100%;
+  width: 4px; height: 22px; margin-left: -2px; border-radius: 2px;
+  background: var(--borde-fuerte);
+}
+.nodo-cara {
+  width: 66px; height: 66px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 1.5rem; color: #fff; font-weight: 900;
+  background: var(--borde-fuerte);
+  box-shadow: 0 5px 0 var(--borde);
+  transition: transform .1s, box-shadow .1s;
+}
+.nodo.activa .nodo-cara { background: var(--marca); color: #1d1500; box-shadow: 0 5px 0 var(--marca-osc); animation: latido 2.4s ease-in-out infinite; }
+.nodo.hecha .nodo-cara  { background: var(--ok); box-shadow: 0 5px 0 var(--ok-osc); }
+.nodo.cerrada .nodo-cara { background: var(--superficie-2); color: var(--texto-suave); box-shadow: 0 5px 0 var(--borde); }
+.nodo:not(:disabled):hover .nodo-cara { transform: translateY(-2px); }
+.nodo:not(:disabled):active .nodo-cara { transform: translateY(4px); box-shadow: 0 1px 0 var(--borde); }
+.nodo-nombre { font-size: .84rem; font-weight: 700; color: var(--texto-suave); max-width: 130px; text-align: center; }
+.nodo.activa .nodo-nombre, .nodo.hecha .nodo-nombre { color: var(--texto); }
+.nodo-estrellas { font-size: .7rem; letter-spacing: 1px; color: var(--borde-fuerte); line-height: 1; }
+.nodo-estrellas i { font-style: normal; }
+.nodo-estrellas i.on { color: var(--marca); }
+
+@keyframes latido {
+  0%, 100% { box-shadow: 0 5px 0 var(--marca-osc), 0 0 0 0 rgba(240, 165, 0, .5); }
+  50%      { box-shadow: 0 5px 0 var(--marca-osc), 0 0 0 12px rgba(240, 165, 0, 0); }
+}
+
+.temario {
+  background: var(--superficie); border: 1px solid var(--borde);
+  border-radius: 0 0 var(--r) var(--r); border-top: 0;
+  padding: 4px 18px 6px; margin-top: -6px;
+}
+.temario summary { cursor: pointer; padding: 12px 0; font-weight: 700; color: var(--texto-suave); font-size: .92rem; }
+.temario ul { margin: 0 0 12px; padding-left: 1.2em; color: var(--texto-suave); font-size: .92rem; }
+.temario li { margin-bottom: .28em; }
+
+.pie-mapa { text-align: center; color: var(--texto-suave); font-size: .82rem; padding-top: 20px; }
+
+/* ── Leccion ─────────────────────────────────────────────────────────────── */
+
+.pantalla-leccion { min-height: 100vh; min-height: 100dvh; display: flex; }
+.leccion { display: flex; flex-direction: column; flex: 1; min-height: 100dvh; }
+
+.lec-cabecera {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; max-width: 740px; margin: 0 auto; width: 100%;
+}
+.salir { background: none; border: 0; font-size: 1.35rem; color: var(--texto-suave); padding: 2px 8px; border-radius: 8px; }
+.salir:hover { background: var(--superficie-2); }
+.barra { flex: 1; height: 15px; background: var(--superficie-2); border-radius: 99px; overflow: hidden; }
+.barra i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--ok); transition: width .35s cubic-bezier(.2, .9, .3, 1); }
+.vidas { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; color: var(--mal); }
+.vidas.sin-vidas { opacity: .5; }
+
+.lec-escena { flex: 1; width: 100%; max-width: 740px; margin: 0 auto; padding: 8px 18px 24px; }
+.paso { animation: entra .3s ease-out; }
+@keyframes entra { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.paso-emoji { font-size: 2.6rem; text-align: center; line-height: 1; margin-bottom: 8px; }
+.paso-emoji.celebra { animation: brinca .7s ease-out; font-size: 3.6rem; }
+@keyframes brinca { 0% { transform: scale(.3) rotate(-14deg); opacity: 0; } 60% { transform: scale(1.18); } 100% { transform: none; opacity: 1; } }
+
+.paso-info h2, .paso-fin h2 { text-align: center; }
+.enunciado { font-size: 1.22rem; margin-bottom: 16px; }
+.aviso-reintento {
+  display: inline-block; background: var(--marca-suave); color: var(--marca-osc);
+  font-weight: 800; font-size: .8rem; padding: 4px 12px; border-radius: 99px; margin-bottom: 12px;
+}
+
+.visual {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r);
+  padding: 12px;
+  margin: 0 0 18px;
+  overflow-x: auto;
+}
+.visual svg { display: block; width: 100%; height: auto; max-width: 520px; margin: 0 auto; }
+
+/* Opciones */
+.opciones { display: grid; gap: 11px; }
+.opciones.col-2 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.opcion {
+  display: flex; align-items: center; gap: 12px; text-align: left;
+  background: var(--superficie);
+  border: 2px solid var(--borde);
+  box-shadow: 0 3px 0 var(--borde);
+  border-radius: 14px; padding: 14px 16px;
+  transition: transform .08s, border-color .15s, background .15s;
+}
+.opcion:hover:not(:disabled) { border-color: var(--borde-fuerte); background: var(--superficie-2); }
+.opcion:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 var(--borde); }
+.opcion kbd {
+  flex: none; width: 26px; height: 26px; display: grid; place-items: center;
+  border: 2px solid var(--borde); border-radius: 7px;
+  font: 700 .78rem var(--mono); color: var(--texto-suave);
+}
+.opcion.elegida { border-color: var(--azul); background: color-mix(in srgb, var(--azul) 10%, var(--superficie)); box-shadow: 0 3px 0 color-mix(in srgb, var(--azul) 45%, var(--borde)); }
+.opcion.elegida kbd { border-color: var(--azul); color: var(--azul); }
+.opcion.correcta { border-color: var(--ok); background: var(--ok-suave); box-shadow: 0 3px 0 var(--ok); }
+.opcion.incorrecta { border-color: var(--mal); background: var(--mal-suave); box-shadow: 0 3px 0 var(--mal); }
+.opcion:disabled { cursor: default; opacity: 1; }
+
+/* Instruccion de formato: dice como se responde, no que se pregunta. */
+.instruccion {
+  color: var(--texto-suave); font-size: .88rem; margin: -8px 0 14px;
+}
+
+/* Seleccion multiple: casilla visible, porque "marca todas" necesita que se
+   note que se puede marcar mas de una. */
+.opcion.marcable .casilla {
+  flex: none; width: 22px; height: 22px; border-radius: 6px;
+  border: 2px solid var(--borde-fuerte); position: relative;
+}
+.opcion.marcable.elegida .casilla { background: var(--azul); border-color: var(--azul); }
+.opcion.marcable.elegida .casilla::after {
+  content: "✓"; position: absolute; inset: 0; color: #fff;
+  font-size: .8rem; font-weight: 900; display: grid; place-items: center;
+}
+.opcion.marcable.correcta .casilla { background: var(--ok); border-color: var(--ok); }
+.opcion.marcable.incorrecta .casilla { background: var(--mal); border-color: var(--mal); }
+
+/* Ordenar: el numero aparece al tocar, y ese es todo el feedback que hace falta. */
+.opcion.ordenable kbd { transition: background .15s, color .15s; }
+.opcion.puesta { border-color: var(--azul); background: color-mix(in srgb, var(--azul) 8%, var(--superficie)); }
+.opcion.puesta kbd { background: var(--azul); border-color: var(--azul); color: #fff; }
+.btn.chico { padding: 8px 16px; font-size: .85rem; }
+.opcion.ordenable ~ .btn.chico, .paso .btn.chico { margin-top: 12px; }
+
+/* Emparejar: dos columnas de fichas que se van fijando al acertar. */
+.emparejar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.col-emparejar { display: grid; gap: 10px; align-content: start; }
+.ficha {
+  background: var(--superficie); border: 2px solid var(--borde);
+  box-shadow: 0 3px 0 var(--borde); border-radius: 12px;
+  padding: 13px 14px; text-align: center; font-weight: 600;
+  transition: transform .08s, border-color .15s, opacity .25s;
+}
+.ficha:hover:not(:disabled) { border-color: var(--borde-fuerte); }
+.ficha:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 var(--borde); }
+.ficha.elegida { border-color: var(--azul); background: color-mix(in srgb, var(--azul) 10%, var(--superficie)); box-shadow: 0 3px 0 var(--azul); }
+.ficha.resuelta { border-color: var(--ok); background: var(--ok-suave); box-shadow: none; opacity: .55; cursor: default; }
+.ficha.falla { border-color: var(--mal); background: var(--mal-suave); animation: temblor .4s; }
+@keyframes temblor {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Senalar sobre el diagrama */
+.cz-senalable { cursor: pointer; }
+.cz-golpe { fill: transparent; }
+.cz-senalable:hover .cz-zig { stroke: var(--azul); }
+.cz-senalable:hover .cz-golpe { fill: color-mix(in srgb, var(--azul) 12%, transparent); }
+.cz-senalable:focus-visible { outline: none; }
+.cz-senalable:focus-visible .cz-golpe { fill: color-mix(in srgb, var(--azul) 18%, transparent); stroke: var(--azul); stroke-width: 2; }
+.cz-senalable.cz-elegido .cz-zig { stroke: var(--azul); stroke-width: 3.6; }
+.cz-senalable.cz-elegido .cz-golpe { fill: color-mix(in srgb, var(--azul) 18%, transparent); }
+.cz-senalable.cz-ok .cz-zig { stroke: var(--ok); stroke-width: 3.6; }
+.cz-senalable.cz-ok .cz-golpe { fill: color-mix(in srgb, var(--ok) 20%, transparent); }
+.cz-senalable.cz-ok .cz-nombre { fill: var(--ok-osc); }
+.cz-senalable.cz-mal .cz-zig { stroke: var(--mal); stroke-width: 3.6; }
+.cz-senalable.cz-mal .cz-golpe { fill: color-mix(in srgb, var(--mal) 20%, transparent); }
+.cz-senalable.cz-mal .cz-nombre { fill: var(--mal-osc); }
+
+/* Entradas numericas */
+.campo-unidad { display: flex; align-items: center; gap: 10px; justify-content: center; margin: 6px 0 16px; }
+.entrada-grande {
+  font: 800 1.5rem var(--mono);
+  width: 180px; text-align: center;
+  padding: 12px 14px; border-radius: 14px;
+  border: 2px solid var(--borde-fuerte); background: var(--superficie); color: var(--texto);
+}
+.entrada-grande.ok  { border-color: var(--ok); background: var(--ok-suave); }
+.entrada-grande.mal { border-color: var(--mal); background: var(--mal-suave); }
+.campo-unidad > span { font: 700 1.2rem var(--mono); color: var(--texto-suave); }
+
+.pista { margin-top: 4px; }
+.pista summary { cursor: pointer; color: var(--azul); font-weight: 700; font-size: .92rem; }
+.pista .prosa { background: var(--superficie-2); border-radius: 10px; padding: 10px 14px; margin-top: 8px; font-size: .94rem; }
+
+/* Pie con feedback */
+.lec-pie {
+  position: sticky; bottom: 0;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--borde);
+  background: var(--superficie);
+}
+/* Emparejar no usa boton: sin esto el pie deja una franja vacia. */
+.lec-pie:empty { display: none; }
+.lec-pie > * { max-width: 740px; }
+.lec-pie:not(.ok):not(.mal) { justify-content: center; }
+.lec-pie.ok  { background: var(--ok-suave); border-top-color: var(--ok); }
+.lec-pie.mal { background: var(--mal-suave); border-top-color: var(--mal); }
+.lec-pie.ok .btn.principal  { background: var(--ok); color: #fff; box-shadow: 0 4px 0 var(--ok-osc); }
+.lec-pie.mal .btn.principal { background: var(--mal); color: #fff; box-shadow: 0 4px 0 var(--mal-osc); }
+.lec-pie .btn { margin-left: auto; }
+
+.fb-cuerpo { display: flex; gap: 13px; align-items: flex-start; flex: 1; min-width: 240px; animation: entra .25s; }
+.fb-icono {
+  flex: none; width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 900; color: #fff; font-size: 1.1rem;
+}
+.lec-pie.ok .fb-icono  { background: var(--ok); }
+.lec-pie.mal .fb-icono { background: var(--mal); }
+.lec-pie.ok strong  { color: var(--ok-osc); font-size: 1.1rem; }
+.lec-pie.mal strong { color: var(--mal-osc); font-size: 1.1rem; }
+.fb-detalle { font-size: .93rem; margin-top: 3px; }
+.fb-detalle p:last-child { margin-bottom: 0; }
+.respuesta-buena { font-weight: 600; }
+.lista-errores { margin: 0 0 .5em; padding-left: 1.2em; }
+
+/* Fin de leccion */
+.paso-fin { text-align: center; padding-top: 26px; }
+.estrellas { font-size: 2.2rem; letter-spacing: 8px; color: var(--borde-fuerte); margin: 6px 0 18px; }
+.estrellas .on { color: var(--marca); text-shadow: 0 0 18px rgba(240, 165, 0, .55); }
+.resumen { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.tarjeta-res {
+  border: 2px solid var(--borde); border-radius: 14px; padding: 12px 26px; min-width: 118px;
+  background: var(--superficie);
+}
+.tarjeta-res.xp { border-color: var(--marca); }
+.tarjeta-res b { display: block; font-size: 1.6rem; line-height: 1.1; }
+.tarjeta-res.xp b { color: var(--marca-osc); }
+.tarjeta-res span { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-suave); font-weight: 700; }
+
+/* ── Circuitos ───────────────────────────────────────────────────────────── */
+
+.cz { overflow: visible; }
+.cz-cable, .cz-zig {
+  fill: none; stroke: var(--cable);
+  stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+}
+.cz-tapa { fill: var(--superficie); stroke: none; }
+.cz-nodo { fill: var(--cable); }
+.cz-barra-larga, .cz-barra-corta { stroke: var(--cable); stroke-width: 3.4; stroke-linecap: round; }
+.cz-signo { font: 700 15px var(--fuente); fill: var(--texto-suave); }
+.cz-nombre { font: 800 14px var(--fuente); fill: var(--texto); }
+.cz-valor { font: 600 13px var(--mono); fill: var(--texto-suave); }
+.cz-nota { font: 600 12px var(--fuente); fill: var(--texto-suave); }
+.cz-i { font: 700 13px var(--mono); fill: var(--marca-osc); }
+.cz-flecha line { stroke: var(--marca-osc); stroke-width: 2.2; }
+.cz-punta { fill: var(--marca-osc); }
+.cz-e { fill: var(--electron); filter: drop-shadow(0 0 5px rgba(240, 165, 0, .75)); }
+
+.cz-destacado .cz-zig { stroke: var(--marca); stroke-width: 3.4; }
+.cz-destacado .cz-nombre { fill: var(--marca-osc); }
+
+/* Huecos por completar, incrustados en el diagrama */
+.cz-fo { overflow: visible; }
+.cz-hueco {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--superficie);
+  border: 2px dashed var(--borde-fuerte);
+  border-radius: 9px; padding: 2px 5px; height: 30px;
+}
+.cz-hueco input {
+  width: 100%; min-width: 0; border: 0; background: none; color: var(--texto);
+  font: 800 14px var(--mono); text-align: center; padding: 0;
+}
+.cz-hueco input:focus { outline: none; }
+.cz-hueco:focus-within { border-style: solid; border-color: var(--azul); box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 22%, transparent); }
+.cz-hueco .cz-unidad { font: 700 13px var(--mono); color: var(--texto-suave); flex: none; }
+.cz-hueco.ok  { border-style: solid; border-color: var(--ok); background: var(--ok-suave); }
+.cz-hueco.mal { border-style: solid; border-color: var(--mal); background: var(--mal-suave); }
+
+/* ── Visuales ────────────────────────────────────────────────────────────── */
+
+.viz-rot { font: 600 12px var(--fuente); fill: var(--texto-suave); }
+.viz-titulo { font: 900 13px var(--fuente); fill: var(--texto); letter-spacing: .08em; }
+.viz-ok { fill: var(--ok); font-weight: 800; }
+.viz-mal { fill: var(--mal); font-weight: 800; }
+.viz-g { transition: opacity .3s; }
+.viz-g.atenua { opacity: .32; }
+.viz-g.resalta .viz-rot { fill: var(--marca-osc); font-weight: 800; }
+
+/* En la analogia hidraulica lo que circula es agua, no carga: el ambar de
+   los electrones haria pensar que el dibujo ya es el circuito. */
+.viz-gota { fill: var(--azul); opacity: .85; }
+.viz-tanque { fill: none; stroke: var(--cable); stroke-width: 2.6; }
+.viz-agua-fill { fill: color-mix(in srgb, var(--azul) 42%, transparent); }
+.viz-tubo { fill: none; stroke: var(--borde-fuerte); stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
+.viz-tubo-r { fill: color-mix(in srgb, var(--azul) 12%, transparent); stroke: var(--borde-fuerte); stroke-width: 2; }
+.viz-cota { stroke: var(--texto-suave); stroke-width: 1.4; stroke-dasharray: 4 3; }
+.viz-valvula { fill: var(--mal); }
+.viz-marco { fill: none; stroke: var(--borde); stroke-width: 2; }
+.viz-obst { fill: var(--mal); rx: 3; }
+
+.viz-tri { fill: color-mix(in srgb, var(--marca) 14%, transparent); stroke: var(--marca); stroke-width: 3; stroke-linejoin: round; }
+.viz-tri-div { stroke: var(--marca); stroke-width: 2.4; }
+.viz-letra { font: 900 38px var(--fuente); fill: var(--texto); }
+.viz-tapa-circ { fill: var(--texto-suave); opacity: .9; }
+.viz-celda.tapada .viz-letra { opacity: 0; }
+
+.viz-halo { fill: var(--marca); filter: blur(9px); }
+.viz-bulbo {
+  fill: color-mix(in srgb, var(--marca) calc(var(--brillo, 0) * 85%), var(--superficie-2));
+  stroke: var(--cable); stroke-width: 2.2;
+}
+.viz-filamento { fill: none; stroke: var(--mal-osc); stroke-width: 2; }
+
+.viz-barra { fill: var(--azul); }
+.viz-barra.b2 { fill: var(--violeta); }
+.viz-barra-txt { font: 800 14px var(--fuente); fill: #fff; }
+/* Cuando el reparto es muy desigual el rotulo no cabe dentro de la barra
+   y se escribe al lado, donde necesita el color de texto normal. */
+.viz-barra-txt.fuera { fill: var(--texto); }
+
+.lab { display: flex; flex-direction: column; gap: 12px; }
+.lab-lecturas { display: flex; gap: 12px; justify-content: center; }
+.lect {
+  background: var(--superficie-2); border-radius: 12px; padding: 8px 20px; text-align: center; min-width: 120px;
+}
+.lect span { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-suave); font-weight: 700; }
+.lect b { font: 800 1.25rem var(--mono); color: var(--marca-osc); }
+.lab-controles { display: grid; gap: 12px; }
+.lab-controles label { display: block; font-size: .88rem; font-weight: 700; }
+.lab-controles label > span { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--texto-suave); }
+.lab-controles output { font: 800 .95rem var(--mono); color: var(--texto); }
+.lab-controles input[type="range"] { width: 100%; accent-color: var(--marca); height: 22px; }
+
+/* ── Ajustes ─────────────────────────────────────────────────────────────── */
+
+.ajustes { max-width: 620px; margin: 0 auto; padding: 22px 18px 60px; display: grid; gap: 16px; }
+.tarjeta { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--r); padding: 18px; box-shadow: var(--sombra); }
+.tarjeta h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.tarjeta p { color: var(--texto-suave); font-size: .94rem; }
+.tarjeta.peligro { border-color: color-mix(in srgb, var(--mal) 40%, var(--borde)); }
+.grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+.grid-stats b { display: block; font-size: 1.5rem; color: var(--marca-osc); }
+.grid-stats span { font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; color: var(--texto-suave); font-weight: 700; }
+
+/* ── Respaldo del progreso ───────────────────────────────────────────────── */
+
+.banda-aviso {
+  background: var(--mal-suave);
+  border: 1px solid color-mix(in srgb, var(--mal) 40%, transparent);
+  border-left: 4px solid var(--mal);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 22px;
+  font-size: .92rem;
+}
+
+.tarjeta h4 {
+  margin: 18px 0 8px;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--texto-suave);
+}
+.fila-botones { display: flex; gap: 10px; flex-wrap: wrap; }
+.campo-respaldo {
+  width: 100%;
+  font: 500 .82rem var(--mono);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--borde);
+  background: var(--superficie-2);
+  color: var(--texto);
+  resize: vertical;
+  margin-bottom: 10px;
+}
+.campo-respaldo:focus { outline: none; border-color: var(--azul); }
+.aviso-guardado {
+  border-radius: 8px; padding: 9px 12px; font-size: .89rem; font-weight: 600;
+}
+.aviso-guardado.mal { background: var(--mal-suave); color: var(--mal-osc); }
+.resultado-respaldo:empty { display: none; }
+.resultado-respaldo {
+  margin: 12px 0 0; font-size: .89rem; font-weight: 700;
+}
+.resultado-respaldo.ok { color: var(--ok-osc); }
+.resultado-respaldo.mal { color: var(--mal-osc); }
+.nota-fina { font-size: .82rem; color: var(--texto-suave); margin: 12px 0 0; }
+
+/* Aviso flotante de version nueva: no interrumpe, pero no se pierde de vista. */
+.banda-version {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex; align-items: center; gap: 14px;
+  background: var(--superficie);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 999px;
+  padding: 9px 10px 9px 20px;
+  box-shadow: 0 6px 24px rgba(20, 30, 45, .18);
+  font-size: .92rem; font-weight: 600;
+  max-width: calc(100vw - 32px);
+  animation: sube-banda .35s ease-out;
+}
+.banda-version .btn { margin: 0; white-space: nowrap; }
+@keyframes sube-banda {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── Responsive y accesibilidad ──────────────────────────────────────────── */
+
+@media (max-width: 560px) {
+  h1 { font-size: 1.45rem; }
+  .enunciado { font-size: 1.1rem; }
+  .nodo { transform: translateX(calc(var(--desfase, 0) * .6)); }
+  .nodo-cara { width: 58px; height: 58px; font-size: 1.3rem; }
+  .lec-pie { flex-direction: column; align-items: stretch; }
+  .lec-pie .btn { margin-left: 0; width: 100%; }
+  .mod-prog { min-width: 62px; }
+  .emparejar { gap: 8px; }
+  .ficha { padding: 11px 8px; font-size: .9rem; }
+  .stats { gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  .cz-e, .viz-agua-fill { display: none; }
+}
+
+</style>
+<div id="app"><noscript>Voltio necesita JavaScript.</noscript></div>
+<script>
+(function(){
+'use strict';
+/* ── js/circuito.js ── */
+// circuito.js — motor de dibujo de circuitos en SVG.
+//
+// Todo se arma con un spec declarativo y sale un <svg> listo para insertar.
+// Las resistencias van con el zigzag clasico porque se lee mejor de un vistazo
+// que el rectangulo IEC, que es lo que importa en una leccion.
+
+const NS = 'http://www.w3.org/2000/svg';
+let contadorId = 0;
+const nuevoId = (pre) => `${pre}-${++contadorId}`;
+
+/** Crea un nodo SVG con atributos y, opcionalmente, hijos. */
+function el(tag, attrs = {}, hijos = []) {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === undefined || v === null) continue;
+    n.setAttribute(k, String(v));
+  }
+  for (const h of [].concat(hijos)) if (h) n.appendChild(h);
+  return n;
+}
+
+const txt = (s) => document.createTextNode(s);
+
+// ── Simbolos ────────────────────────────────────────────────────────────────
+
+/**
+ * Zigzag de resistencia sobre un tramo horizontal o vertical.
+ * (cx, cy) es el centro del simbolo; largo es la extension total del zigzag.
+ */
+function zigzag(cx, cy, largo, vertical, amplitud = 11) {
+  const n = 6;                       // dientes
+  const paso = largo / n;
+  const ini = -largo / 2;
+  const pts = [[ini, 0]];
+  for (let i = 0; i < n; i++) {
+    pts.push([ini + paso * (i + 0.5), (i % 2 === 0 ? -1 : 1) * amplitud]);
+  }
+  pts.push([largo / 2, 0]);
+  const d = pts
+    .map(([u, v], i) => {
+      const [px, py] = vertical ? [cx + v, cy + u] : [cx + u, cy + v];
+      return `${i === 0 ? 'M' : 'L'}${px.toFixed(1)} ${py.toFixed(1)}`;
+    })
+    .join(' ');
+  return el('path', { d, class: 'cz-zig' });
+}
+
+/** Campo editable incrustado en el diagrama (para los ejercicios de completar). */
+function campoHueco(x, y, ancho, hueco) {
+  const fo = el('foreignObject', { x, y, width: ancho, height: 32, class: 'cz-fo' });
+  const cont = document.createElement('div');
+  cont.className = 'cz-hueco';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.inputMode = 'decimal';
+  input.autocomplete = 'off';
+  input.spellcheck = false;
+  input.placeholder = '?';
+  input.dataset.hueco = hueco.id;
+  input.setAttribute('aria-label', hueco.etiqueta || hueco.id);
+  cont.appendChild(input);
+  if (hueco.unidad) {
+    const u = document.createElement('span');
+    u.className = 'cz-unidad';
+    u.textContent = hueco.unidad;
+    cont.appendChild(u);
+  }
+  fo.appendChild(cont);
+  return fo;
+}
+
+/** Resistencia completa: zigzag + etiqueta (valor fijo o hueco por completar). */
+function resistor(cfg) {
+  const {
+    cx, cy, largo = 66, vertical = false,
+    nombre = '', valor = '', hueco = null, destacado = false, ladoEtiqueta = 'auto',
+    id = null,
+  } = cfg;
+
+  const g = el('g', {
+    class: 'cz-comp' + (destacado ? ' cz-destacado' : '') + (id ? ' cz-senalable' : ''),
+    'data-comp': id,
+    tabindex: id ? '0' : null,
+    role: id ? 'button' : null,
+    'aria-label': id ? `Componente ${nombre || id}` : null,
+  });
+  if (id) {
+    // Area de acierto generosa: el zigzag es un trazo fino y con el dedo no se
+    // acierta. El rectangulo transparente se dibuja primero, debajo de todo.
+    const m = 26;
+    g.appendChild(el('rect', {
+      x: cx - (vertical ? m : largo / 2 + 10), y: cy - (vertical ? largo / 2 + 10 : m),
+      width: vertical ? m * 2 : largo + 20, height: vertical ? largo + 20 : m * 2,
+      class: 'cz-golpe', rx: 8,
+    }));
+  }
+  g.appendChild(zigzag(cx, cy, largo, vertical));
+
+  // El zigzag ocupa +-11 alrededor del eje, asi que las etiquetas tienen que
+  // despegarse lo suficiente para no quedar encima de los dientes.
+  const lado = ladoEtiqueta === 'auto' ? (vertical ? 'derecha' : 'arriba') : ladoEtiqueta;
+  let tx = cx, tyNombre = cy, tyValor = cy, anchor = 'middle';
+  // Un campo editable es mas alto que una linea de texto, asi que cuando lo hay
+  // el nombre se corre un poco mas para dejarle sitio.
+  const conCampo = Boolean(hueco);
+  if (lado === 'arriba')    { tyNombre = cy - (conCampo ? 54 : 44); tyValor = cy - 26; }
+  if (lado === 'abajo')     { tyNombre = cy + 34; tyValor = cy + 52; }
+  if (lado === 'derecha')   { tx = cx + 26; tyNombre = cy - (conCampo ? 14 : 6); tyValor = cy + 12; anchor = 'start'; }
+  if (lado === 'izquierda') { tx = cx - 26; tyNombre = cy - (conCampo ? 14 : 6); tyValor = cy + 12; anchor = 'end'; }
+
+  if (nombre) {
+    g.appendChild(el('text',
+      { x: tx, y: tyNombre, 'text-anchor': anchor, class: 'cz-nombre' }, [txt(nombre)]));
+  }
+
+  if (hueco) {
+    const ancho = 78;
+    const fx = anchor === 'start' ? tx - 4 : anchor === 'end' ? tx - ancho + 4 : tx - ancho / 2;
+    // El campo mide 32 de alto: se ancla de modo que su borde inferior no
+    // alcance el zigzag.
+    const fy = lado === 'abajo' ? tyNombre + 8 : lado === 'arriba' ? cy - 46 : cy - 4;
+    g.appendChild(campoHueco(fx, fy, ancho, hueco));
+  } else if (valor) {
+    g.appendChild(el('text',
+      { x: tx, y: nombre ? tyValor : tyNombre, 'text-anchor': anchor, class: 'cz-valor' }, [txt(valor)]));
+  }
+  return g;
+}
+
+/** Fuente DC vertical: barra larga (+) sobre barra corta (−). */
+function fuenteDC(cx, cy, etiqueta, hueco = null) {
+  const g = el('g', { class: 'cz-comp cz-fuente' });
+  g.appendChild(el('line', { x1: cx - 17, y1: cy - 8, x2: cx + 17, y2: cy - 8, class: 'cz-barra-larga' }));
+  g.appendChild(el('line', { x1: cx - 8,  y1: cy + 8, x2: cx + 8,  y2: cy + 8, class: 'cz-barra-corta' }));
+  g.appendChild(el('text', { x: cx - 23, y: cy - 12, 'text-anchor': 'end', class: 'cz-signo' }, [txt('+')]));
+  g.appendChild(el('text', { x: cx - 23, y: cy + 24, 'text-anchor': 'end', class: 'cz-signo' }, [txt('−')]));
+
+  if (hueco) {
+    // Al costado no cabe sin chocar con el primer componente del riel: va debajo.
+    g.appendChild(campoHueco(cx - 39, cy + 26, 78, hueco));
+  } else if (etiqueta) {
+    g.appendChild(el('text',
+      { x: cx + 24, y: cy + 5, 'text-anchor': 'start', class: 'cz-valor' }, [txt(etiqueta)]));
+  }
+  return g;
+}
+
+/** Cable: polilinea sobre una lista de puntos [[x,y],...]. */
+function cable(pts) {
+  return el('polyline', { points: pts.map((p) => p.join(',')).join(' '), class: 'cz-cable' });
+}
+
+/** Punto de union donde se juntan tres o mas cables. */
+function nodo(x, y) { return el('circle', { cx: x, cy: y, r: 4.5, class: 'cz-nodo' }); }
+
+/** Flecha de corriente con etiqueta. `dir` es hacia donde apunta la punta. */
+function flechaCorriente(x, y, etiqueta, dir = 'derecha', anclaTexto = 'arriba') {
+  const g = el('g', { class: 'cz-flecha' });
+  const L = 28;
+  const x2 = dir === 'izquierda' ? x - L : x + L;
+  g.appendChild(el('line', { x1: x, y1: y, x2, y2: y, 'marker-end': 'url(#cz-punta)' }));
+  g.appendChild(el('text', {
+    x: (x + x2) / 2,
+    y: anclaTexto === 'abajo' ? y + 20 : y - 10,
+    'text-anchor': 'middle', class: 'cz-i',
+  }, [txt(etiqueta)]));
+  return g;
+}
+
+/**
+ * Puntos animados recorriendo un camino cerrado. Es la forma mas directa de
+ * mostrar que algo circula, y de que la velocidad signifique magnitud.
+ */
+function electrones(pathD, { cantidad = 8, dur = 4, clase = 'cz-e', radio = 4.5 } = {}) {
+  const id = nuevoId('cz-camino');
+  const g = el('g', { class: 'cz-electrones' });
+  g.appendChild(el('path', { id, d: pathD, fill: 'none', stroke: 'none' }));
+  for (let i = 0; i < cantidad; i++) {
+    const p = el('circle', { r: radio, class: clase });
+    const mp = el('mpath', { href: `#${id}` });
+    // Safari todavia pide la forma con namespace xlink.
+    mp.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', `#${id}`);
+    const anim = el('animateMotion', {
+      dur: `${dur}s`,
+      repeatCount: 'indefinite',
+      begin: `${(-dur * i / cantidad).toFixed(2)}s`,
+    }, [mp]);
+    p.appendChild(anim);
+    g.appendChild(p);
+  }
+  return g;
+}
+
+function defsFlecha() {
+  return el('defs', {}, [
+    el('marker', {
+      id: 'cz-punta', viewBox: '0 0 10 10', refX: 8, refY: 5,
+      markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse',
+    }, [el('path', { d: 'M0 0 L10 5 L0 10 z', class: 'cz-punta' })]),
+  ]);
+}
+
+// ── Topologias ──────────────────────────────────────────────────────────────
+
+const M = { izq: 84, der: 104, sup: 88, inf: 56 };  // margenes del marco
+// El margen derecho es generoso porque en paralelo las etiquetas de la ultima
+// rama se dibujan hacia afuera del marco.
+
+/** Serie: fuente al lado izquierdo, resistencias repartidas en el riel superior. */
+function armarSerie(spec, svg, W, H) {
+  const xL = M.izq, xR = W - M.der, yT = M.sup, yB = H - M.inf;
+  const cyF = (yT + yB) / 2;
+  const ramas = spec.ramas || [];
+  const arriba = ramas.slice(0, 3);
+  const derecha = ramas.slice(3, 5);
+
+  const paso = (xR - xL) / (arriba.length + 1);
+  const centros = arriba.map((_, i) => xL + paso * (i + 1));
+  // Sin esto, con tres resistencias los zigzags se tocan y el riel parece uno solo.
+  const largoS = Math.min(66, paso * 0.56);
+
+  svg.appendChild(cable([[xL, cyF - 26], [xL, yT], [xR, yT]]));
+  svg.appendChild(cable([[xR, yT], [xR, yB], [xL, yB], [xL, cyF + 26]]));
+  svg.appendChild(fuenteDC(xL, cyF, spec.fuente?.etiqueta, spec.fuente?.hueco));
+
+  arriba.forEach((r, i) => {
+    svg.appendChild(el('rect',
+      { x: centros[i] - largoS / 2 - 3, y: yT - 6, width: largoS + 6, height: 12, class: 'cz-tapa' }));
+    svg.appendChild(resistor({
+      cx: centros[i], cy: yT, largo: largoS, nombre: r.nombre, valor: r.valor,
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'arriba',
+    }));
+  });
+
+  const largoD = Math.min(66, ((yB - yT) / (derecha.length + 1)) * 0.56);
+  derecha.forEach((r, i) => {
+    const cy = yT + (yB - yT) * ((i + 1) / (derecha.length + 1));
+    svg.appendChild(el('rect',
+      { x: xR - 6, y: cy - largoD / 2 - 3, width: 12, height: largoD + 6, class: 'cz-tapa' }));
+    svg.appendChild(resistor({
+      cx: xR, cy, largo: largoD, vertical: true, nombre: r.nombre, valor: r.valor,
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'izquierda',
+    }));
+  });
+
+  const loop = `M${xL} ${cyF - 26} L${xL} ${yT} L${xR} ${yT} L${xR} ${yB} L${xL} ${yB} L${xL} ${cyF + 26}`;
+  return { loop, xL, xR, yT, yB, cyF, centros, xLibreHasta: (centros[0] ?? xR) - 36 };
+}
+
+/** Paralelo: dos rieles horizontales y una rama vertical por resistencia. */
+function armarParalelo(spec, svg, W, H) {
+  const xL = M.izq, xR = W - M.der, yT = M.sup, yB = H - M.inf;
+  const cyF = (yT + yB) / 2;
+  const ramas = spec.ramas || [];
+
+  const x0 = xL + 96;
+  const xs = ramas.length > 1
+    ? ramas.map((_, i) => x0 + ((xR - x0) / (ramas.length - 1)) * i)
+    : [(x0 + xR) / 2];
+  const xFin = xs[xs.length - 1];
+
+  svg.appendChild(cable([[xL, cyF - 26], [xL, yT], [xFin, yT]]));
+  svg.appendChild(cable([[xL, cyF + 26], [xL, yB], [xFin, yB]]));
+  svg.appendChild(fuenteDC(xL, cyF, spec.fuente?.etiqueta, spec.fuente?.hueco));
+
+  ramas.forEach((r, i) => {
+    const x = xs[i];
+    svg.appendChild(cable([[x, yT], [x, yB]]));
+    svg.appendChild(el('rect', { x: x - 6, y: cyF - 36, width: 12, height: 72, class: 'cz-tapa' }));
+    svg.appendChild(resistor({
+      cx: x, cy: cyF, vertical: true, nombre: r.nombre, valor: r.valor,
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'derecha',
+    }));
+    if (i > 0 && i < ramas.length - 1) {
+      svg.appendChild(nodo(x, yT));
+      svg.appendChild(nodo(x, yB));
+    }
+  });
+
+  const loop = `M${xL} ${cyF - 26} L${xL} ${yT} L${xs[0]} ${yT} L${xs[0]} ${yB} L${xL} ${yB} L${xL} ${cyF + 26}`;
+  return { loop, xL, xR, yT, yB, cyF, xs, xLibreHasta: xs[0] };
+}
+
+/** Mixto: una resistencia en serie alimentando un paralelo. Base del divisor. */
+function armarMixto(spec, svg, W, H) {
+  const xL = M.izq, xR = W - M.der, yT = M.sup, yB = H - M.inf;
+  const cyF = (yT + yB) / 2;
+  const serie = spec.serie || [];
+  const par = spec.paralelo || [];
+
+  const xSerie = xL + (xR - xL) * 0.32;
+  const xPar0 = xL + (xR - xL) * 0.64;
+  const xsP = par.length > 1
+    ? par.map((_, i) => xPar0 + ((xR - xPar0) / (par.length - 1)) * i)
+    : [(xPar0 + xR) / 2];
+  const xFin = xsP[xsP.length - 1];
+
+  svg.appendChild(cable([[xL, cyF - 26], [xL, yT], [xFin, yT]]));
+  svg.appendChild(cable([[xL, cyF + 26], [xL, yB], [xFin, yB]]));
+  svg.appendChild(fuenteDC(xL, cyF, spec.fuente?.etiqueta, spec.fuente?.hueco));
+
+  if (serie[0]) {
+    svg.appendChild(el('rect', { x: xSerie - 36, y: yT - 6, width: 72, height: 12, class: 'cz-tapa' }));
+    svg.appendChild(resistor({
+      cx: xSerie, cy: yT, nombre: serie[0].nombre, valor: serie[0].valor,
+      hueco: serie[0].hueco, destacado: serie[0].destacado, id: serie[0].id, ladoEtiqueta: 'arriba',
+    }));
+  }
+
+  par.forEach((r, i) => {
+    const x = xsP[i];
+    svg.appendChild(cable([[x, yT], [x, yB]]));
+    svg.appendChild(el('rect', { x: x - 6, y: cyF - 36, width: 12, height: 72, class: 'cz-tapa' }));
+    svg.appendChild(resistor({
+      cx: x, cy: cyF, vertical: true, nombre: r.nombre, valor: r.valor,
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'derecha',
+    }));
+    if (i > 0 && i < par.length - 1) { svg.appendChild(nodo(x, yT)); svg.appendChild(nodo(x, yB)); }
+  });
+
+  const loop = `M${xL} ${cyF - 26} L${xL} ${yT} L${xsP[0]} ${yT} L${xsP[0]} ${yB} L${xL} ${yB} L${xL} ${cyF + 26}`;
+  return { loop, xL, xR, yT, yB, cyF, xSerie, xsP, xLibreHasta: xSerie - 36 };
+}
+
+// ── API publica ─────────────────────────────────────────────────────────────
+
+/**
+ * Construye el <svg> de un circuito a partir de un spec declarativo:
+ *
+ *   {
+ *     tipo: 'serie' | 'paralelo' | 'mixto',
+ *     fuente: { etiqueta: '12 V', hueco: { id, unidad } },
+ *     ramas:  [{ nombre: 'R1', valor: '100 Ω', hueco, destacado }],
+ *     serie / paralelo: idem, solo para tipo 'mixto',
+ *     corriente: { velocidad: 1, etiqueta: 'I' } | false,
+ *     ancho, alto, nota, descripcion
+ *   }
+ */
+function construirCircuito(spec) {
+  const W = spec.ancho || 520;
+  const H = spec.alto || 300;
+  const svg = el('svg', {
+    viewBox: `0 0 ${W} ${H}`, class: 'cz', role: 'img',
+    'aria-label': spec.descripcion || 'Diagrama de circuito',
+  });
+  svg.appendChild(defsFlecha());
+
+  const geo = spec.tipo === 'paralelo' ? armarParalelo(spec, svg, W, H)
+            : spec.tipo === 'mixto'    ? armarMixto(spec, svg, W, H)
+            :                            armarSerie(spec, svg, W, H);
+
+  if (spec.corriente !== false) {
+    const vel = spec.corriente?.velocidad ?? 1;
+    // Velocidad 0 = circuito abierto: no circula nada, no se dibuja nada.
+    if (vel > 0) svg.appendChild(electrones(geo.loop, { dur: 4 / vel }));
+    if (spec.corriente?.etiqueta) {
+      // Arriba solo si queda tramo libre entre la fuente y el primer componente;
+      // si no, se rotula el riel de retorno, que siempre esta despejado.
+      const cabeArriba = geo.xLibreHasta - geo.xL > 128;
+      svg.appendChild(cabeArriba
+        ? flechaCorriente(geo.xL + 20, geo.yT - 30, spec.corriente.etiqueta, 'derecha', 'arriba')
+        : flechaCorriente((geo.xL + geo.xR) / 2 + 14, geo.yB, spec.corriente.etiqueta, 'izquierda', 'abajo'));
+    }
+  }
+
+  if (spec.nota) {
+    svg.appendChild(el('text',
+      { x: W / 2, y: H - 14, 'text-anchor': 'middle', class: 'cz-nota' }, [txt(spec.nota)]));
+  }
+  return svg;
+}
+
+const svgEl = el;
+const svgTxt = txt;
+
+
+/* ── js/estado.js ── */
+// estado.js — progreso del usuario: XP, racha, lecciones completadas, vidas.
+// Todo se persiste en localStorage, que puede fallar (modo privado, cookies
+// bloqueadas), asi que cada acceso va envuelto.
+
+const CLAVE = 'voltio.progreso.v1';
+
+const INICIAL = {
+  xp: 0,
+  racha: 0,
+  ultimoDia: null,      // 'YYYY-MM-DD' del ultimo dia con actividad
+  completadas: {},      // { 'f-ohm': { estrellas: 3, mejorXp: 40 } }
+  vidas: 5,
+  vidasRecarga: null,   // timestamp de la ultima recarga
+};
+
+/**
+ * Si el navegador bloquea el almacenamiento (incognito, cookies bloqueadas), el
+ * progreso se pierde al cerrar. Antes fallaba en silencio; ahora se comprueba
+ * de verdad —escribiendo— para poder avisarlo en pantalla.
+ */
+function probarAlmacenamiento() {
+  try {
+    const k = '__voltio_prueba__';
+    localStorage.setItem(k, '1');
+    localStorage.removeItem(k);
+    return true;
+  } catch { return false; }
+}
+
+const hayAlmacenamiento = probarAlmacenamiento();
+
+/** Se pone en true si una escritura falla despues del arranque (cuota llena). */
+let escrituraFallida = false;
+const guardadoSano = () => hayAlmacenamiento && !escrituraFallida;
+
+function leerCrudo() {
+  try {
+    const txt = localStorage.getItem(CLAVE);
+    return txt ? JSON.parse(txt) : null;
+  } catch { return null; }
+}
+
+function escribirCrudo(obj) {
+  try {
+    localStorage.setItem(CLAVE, JSON.stringify(obj));
+    escrituraFallida = false;
+  } catch {
+    escrituraFallida = true;
+  }
+}
+
+const estado = Object.assign({}, INICIAL, leerCrudo() || {});
+
+// Los objetos anidados hay que fusionarlos aparte, el assign es superficial.
+estado.completadas = Object.assign({}, INICIAL.completadas, estado.completadas || {});
+
+const oyentes = new Set();
+function suscribir(fn) { oyentes.add(fn); return () => oyentes.delete(fn); }
+function avisar() { escribirCrudo(estado); oyentes.forEach((fn) => fn(estado)); }
+
+function hoyISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function diasEntre(isoA, isoB) {
+  const a = new Date(isoA + 'T00:00:00');
+  const b = new Date(isoB + 'T00:00:00');
+  return Math.round((b - a) / 86400000);
+}
+
+/** Marca actividad de hoy y actualiza la racha. Devuelve true si la racha subio. */
+function tocarRacha() {
+  const hoy = hoyISO();
+  if (estado.ultimoDia === hoy) return false;
+  const salto = estado.ultimoDia ? diasEntre(estado.ultimoDia, hoy) : Infinity;
+  estado.racha = salto === 1 ? estado.racha + 1 : 1;
+  estado.ultimoDia = hoy;
+  avisar();
+  return true;
+}
+
+/** La racha mostrada muere sola si el usuario no volvio ni ayer ni hoy. */
+function rachaVigente() {
+  if (!estado.ultimoDia) return 0;
+  const salto = diasEntre(estado.ultimoDia, hoyISO());
+  return salto <= 1 ? estado.racha : 0;
+}
+
+function sumarXp(n) {
+  estado.xp += n;
+  avisar();
+}
+
+/** Las vidas se recargan de a una cada 20 minutos, hasta 5. */
+const MS_POR_VIDA = 20 * 60 * 1000;
+function sincronizarVidas() {
+  if (estado.vidas >= 5) { estado.vidasRecarga = null; return estado.vidas; }
+  const ahora = Date.now();
+  if (!estado.vidasRecarga) { estado.vidasRecarga = ahora; avisar(); return estado.vidas; }
+  const ganadas = Math.floor((ahora - estado.vidasRecarga) / MS_POR_VIDA);
+  if (ganadas > 0) {
+    estado.vidas = Math.min(5, estado.vidas + ganadas);
+    estado.vidasRecarga = estado.vidas >= 5 ? null : estado.vidasRecarga + ganadas * MS_POR_VIDA;
+    avisar();
+  }
+  return estado.vidas;
+}
+
+function perderVida() {
+  sincronizarVidas();
+  if (estado.vidas > 0) {
+    estado.vidas -= 1;
+    if (estado.vidas < 5 && !estado.vidasRecarga) estado.vidasRecarga = Date.now();
+    avisar();
+  }
+  return estado.vidas;
+}
+
+function rellenarVidas() {
+  estado.vidas = 5;
+  estado.vidasRecarga = null;
+  avisar();
+}
+
+function completarLeccion(id, { estrellas, xp }) {
+  const previo = estado.completadas[id];
+  estado.completadas[id] = {
+    estrellas: Math.max(estrellas, previo?.estrellas ?? 0),
+    mejorXp: Math.max(xp, previo?.mejorXp ?? 0),
+  };
+  estado.xp += xp;
+  tocarRacha();
+  avisar();
+  return !previo;   // true si es la primera vez que la completa
+}
+
+function estaCompletada(id) { return Boolean(estado.completadas[id]); }
+function estrellasDe(id) { return estado.completadas[id]?.estrellas ?? 0; }
+
+function reiniciarTodo() {
+  Object.assign(estado, INICIAL, { completadas: {} });
+  avisar();
+}
+
+// ── Respaldo portatil ───────────────────────────────────────────────────────
+//
+// Sin cuenta ni servidor, la unica forma de que el progreso sobreviva a un
+// "limpiar datos de navegacion" —o llegue a otro dispositivo— es que el usuario
+// se lo pueda llevar. Se exporta en dos formatos: un archivo .json legible y un
+// codigo de texto que cabe en un mensaje.
+
+const FORMATO = 1;
+
+/** Solo lo que vale la pena conservar: las vidas se regeneran solas. */
+function instantanea() {
+  return {
+    formato: FORMATO,
+    app: 'voltio',
+    creado: new Date().toISOString(),
+    datos: {
+      xp: estado.xp,
+      racha: estado.racha,
+      ultimoDia: estado.ultimoDia,
+      completadas: estado.completadas,
+    },
+  };
+}
+
+function exportarJSON() {
+  return JSON.stringify(instantanea(), null, 2);
+}
+
+/** Base64 con paso por UTF-8: el JSON lleva acentos y btoa solo acepta latin1. */
+function exportarCodigo() {
+  const bytes = new TextEncoder().encode(JSON.stringify(instantanea()));
+  let bin = '';
+  bytes.forEach((b) => { bin += String.fromCharCode(b); });
+  return `VOLTIO-${btoa(bin).replace(/=+$/, '')}`;
+}
+
+function decodificar(texto) {
+  const limpio = String(texto).trim();
+  if (!limpio) throw new Error('No pegaste nada.');
+
+  // Acepta indistintamente el archivo .json y el codigo corto.
+  if (limpio.startsWith('{')) return JSON.parse(limpio);
+
+  const cuerpo = limpio.replace(/^VOLTIO-/, '').replace(/\s+/g, '');
+  const relleno = cuerpo + '='.repeat((4 - (cuerpo.length % 4)) % 4);
+  const bin = atob(relleno);
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/**
+ * Restaura un respaldo. `fusionar` conserva lo mejor de cada lado, que es lo
+ * sensato al traer progreso de otro dispositivo: nadie quiere perder estrellas
+ * por importar un respaldo viejo.
+ */
+function importar(texto, { fusionar = true } = {}) {
+  // Fuera del try: si no, el mensaje util queda tapado por el generico.
+  if (!String(texto ?? '').trim()) throw new Error('Pega primero un código de respaldo.');
+
+  let sobre;
+  try {
+    sobre = decodificar(texto);
+  } catch {
+    throw new Error('No se pudo leer el respaldo. Revisa que esté completo.');
+  }
+  if (sobre?.app !== 'voltio' || !sobre?.datos) {
+    throw new Error('Eso no parece un respaldo de Voltio.');
+  }
+  if (sobre.formato > FORMATO) {
+    throw new Error('El respaldo viene de una versión más nueva de la app.');
+  }
+
+  const d = sobre.datos;
+  const completadas = {};
+  for (const [id, v] of Object.entries(d.completadas || {})) {
+    if (!v || typeof v !== 'object') continue;
+    completadas[id] = {
+      estrellas: Math.min(3, Math.max(0, Number(v.estrellas) || 0)),
+      mejorXp: Math.max(0, Number(v.mejorXp) || 0),
+    };
+  }
+
+  if (fusionar) {
+    for (const [id, v] of Object.entries(estado.completadas)) {
+      const previo = completadas[id];
+      completadas[id] = {
+        estrellas: Math.max(v.estrellas, previo?.estrellas ?? 0),
+        mejorXp: Math.max(v.mejorXp, previo?.mejorXp ?? 0),
+      };
+    }
+    estado.xp = Math.max(estado.xp, Number(d.xp) || 0);
+    estado.racha = Math.max(estado.racha, Number(d.racha) || 0);
+  } else {
+    estado.xp = Math.max(0, Number(d.xp) || 0);
+    estado.racha = Math.max(0, Number(d.racha) || 0);
+  }
+
+  // La fecha mas reciente manda: si no, una racha importada moriria enseguida.
+  if (d.ultimoDia && (!estado.ultimoDia || d.ultimoDia > estado.ultimoDia)) {
+    estado.ultimoDia = d.ultimoDia;
+  }
+  estado.completadas = completadas;
+  avisar();
+  return { lecciones: Object.keys(completadas).length, xp: estado.xp };
+}
+
+
+/* ── js/motor.js ── */
+// motor.js — reproduce una leccion paso a paso y devuelve el resultado.
+//
+// Una leccion es una lista de pasos. Cada paso se declara con un `tipo` y el
+// motor sabe pintarlo, corregirlo y dar feedback. Los pasos fallados se vuelven
+// a encolar al final: la leccion no termina hasta que todo quedo bien.
+
+
+
+
+// ── Utilidades de respuesta numerica ────────────────────────────────────────
+
+const PREFIJOS = { p: 1e-12, n: 1e-9, u: 1e-6, µ: 1e-6, μ: 1e-6, m: 1e-3, k: 1e3, K: 1e3, M: 1e6, g: 1e9, G: 1e9 };
+
+/**
+ * Convierte lo que escribio el usuario a numero. Acepta coma decimal, prefijos
+ * de ingenieria ("2k2" y "2k2" incluidos) y unidades pegadas al final.
+ */
+function aNumero(bruto) {
+  if (bruto === null || bruto === undefined) return NaN;
+  let s = String(bruto).trim().replace(/\s+/g, '');
+  if (!s) return NaN;
+  s = s.replace(/(ohm|ohms|Ω|Ω|V|A|W|F|H|s)$/i, '');       // unidad al final, si viene
+  s = s.replace(',', '.');
+
+  // Notacion "2k2" / "4M7": el prefijo hace de punto decimal.
+  const conPrefijoIntermedio = s.match(/^(-?\d+)([pnuµμmkKMgG])(\d+)$/);
+  if (conPrefijoIntermedio) {
+    const [, ent, pre, dec] = conPrefijoIntermedio;
+    return parseFloat(`${ent}.${dec}`) * PREFIJOS[pre];
+  }
+
+  const conSufijo = s.match(/^(-?\d*\.?\d+(?:[eE][-+]?\d+)?)([pnuµμmkKMgG])$/);
+  if (conSufijo) return parseFloat(conSufijo[1]) * PREFIJOS[conSufijo[2]];
+
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+/** Compara con tolerancia relativa (por defecto 1%), con piso para el cero. */
+function coincide(valor, esperado, tolerancia = 0.01) {
+  if (!Number.isFinite(valor)) return false;
+  const margen = Math.max(Math.abs(esperado) * tolerancia, 1e-9);
+  return Math.abs(valor - esperado) <= margen;
+}
+
+/** Formatea un numero con prefijo de ingenieria: 4700 -> "4.7 k". */
+function formatear(v, unidad = '') {
+  if (!Number.isFinite(v)) return '—';
+  const abs = Math.abs(v);
+  const tabla = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p']];
+  const [div, pre] = tabla.find(([d]) => abs >= d) || [1, ''];
+  const escalado = v / div;
+  const texto = Math.abs(escalado % 1) < 1e-9
+    ? escalado.toFixed(0)
+    : escalado.toFixed(Math.abs(escalado) < 10 ? 2 : 1).replace(/\.?0+$/, '');
+  return `${texto} ${pre}${unidad}`.trim();
+}
+
+// ── Construccion del DOM de cada tipo de paso ───────────────────────────────
+
+function h(tag, attrs = {}, hijos = []) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === undefined || v === null) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'dataset') Object.assign(n.dataset, v);
+    else n.setAttribute(k, String(v));
+  }
+  for (const c of [].concat(hijos)) {
+    if (c === null || c === undefined || c === false) continue;
+    n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return n;
+}
+
+/** Zona visual del paso: circuito declarativo, nodo suelto o funcion perezosa. */
+function construirVisual(paso) {
+  if (paso.circuito) return h('div', { class: 'visual' }, [construirCircuito(paso.circuito)]);
+  if (typeof paso.visual === 'function') {
+    const v = paso.visual();
+    return v ? h('div', { class: 'visual' }, [v]) : null;
+  }
+  if (paso.visual) return h('div', { class: 'visual' }, [paso.visual]);
+  return null;
+}
+
+function mezclar(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Motor ───────────────────────────────────────────────────────────────────
+
+/**
+ * Reproduce una leccion dentro de `contenedor`.
+ * Devuelve una promesa con { completada, aciertos, fallos, xp, estrellas }.
+ */
+function reproducirLeccion(leccion, contenedor, { alSalir } = {}) {
+  return new Promise((resolver) => {
+    const cola = leccion.pasos.map((p, i) => ({ ...p, _id: i }));
+    const total = cola.length;
+    let indice = 0;
+    let aciertos = 0;
+    let fallos = 0;
+    let resueltos = 0;          // pasos distintos ya superados (para la barra)
+    const yaFallado = new Set();
+
+    contenedor.innerHTML = '';
+    const barraInterior = h('i');
+    const marcadorVidas = h('span', { class: 'vidas' });
+    const cabecera = h('header', { class: 'lec-cabecera' }, [
+      h('button', { class: 'salir', 'aria-label': 'Salir de la leccion', onClick: pedirSalida }, ['✕']),
+      h('div', { class: 'barra', role: 'progressbar', 'aria-label': 'Progreso de la leccion' }, [barraInterior]),
+      marcadorVidas,
+    ]);
+    const escena = h('main', { class: 'lec-escena' });
+    const pie = h('footer', { class: 'lec-pie' });
+    contenedor.append(cabecera, escena, pie);
+
+    function pintarVidas() {
+      const v = sincronizarVidas();
+      marcadorVidas.innerHTML = '';
+      marcadorVidas.append(h('span', { class: 'corazon' }, ['♥']), h('b', {}, [String(v)]));
+      marcadorVidas.classList.toggle('sin-vidas', v === 0);
+    }
+
+    function avanzarBarra() {
+      barraInterior.style.width = `${Math.round((resueltos / total) * 100)}%`;
+    }
+
+    function pedirSalida() {
+      if (resueltos === total || confirm('¿Salir de la leccion? Vas a perder el avance de esta sesion.')) {
+        alSalir?.();
+        resolver({ completada: false, aciertos, fallos, xp: 0, estrellas: 0 });
+      }
+    }
+
+    // ── Feedback inferior ──
+    function mostrarFeedback({ ok, titulo, detalle, alContinuar }) {
+      pie.innerHTML = '';
+      pie.className = `lec-pie ${ok ? 'ok' : 'mal'}`;
+      const cuerpo = h('div', { class: 'fb-cuerpo' }, [
+        h('div', { class: 'fb-icono' }, [ok ? '✓' : '✕']),
+        h('div', {}, [
+          h('strong', {}, [titulo]),
+          detalle ? h('div', { class: 'fb-detalle', html: detalle }) : null,
+        ]),
+      ]);
+      const boton = h('button', { class: 'btn principal', onClick: alContinuar }, ['Continuar']);
+      pie.append(cuerpo, boton);
+      boton.focus();
+      pie.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    function limpiarPie() { pie.innerHTML = ''; pie.className = 'lec-pie'; }
+
+    /** Contabiliza el resultado y decide si el paso se re-encola. */
+    function resolverPaso(paso, ok, feedback) {
+      if (ok) {
+        aciertos++;
+        resueltos++;
+        avanzarBarra();
+      } else {
+        fallos++;
+        if (!yaFallado.has(paso._id)) {
+          yaFallado.add(paso._id);
+          cola.push({ ...paso, _reintento: true });   // vuelve al final de la cola
+        }
+        perderVida();
+        pintarVidas();
+      }
+      mostrarFeedback({ ...feedback, ok, alContinuar: siguiente });
+    }
+
+    // ── Renderizadores por tipo ──
+
+    function pintarInfo(paso) {
+      escena.append(
+        h('div', { class: 'paso paso-info' }, [
+          paso.emoji ? h('div', { class: 'paso-emoji' }, [paso.emoji]) : null,
+          h('h2', {}, [paso.titulo || '']),
+          construirVisual(paso),
+          paso.cuerpo ? h('div', { class: 'prosa', html: paso.cuerpo }) : null,
+        ]),
+      );
+      pie.innerHTML = '';
+      pie.className = 'lec-pie';
+      const b = h('button', { class: 'btn principal', onClick: () => { resueltos++; avanzarBarra(); siguiente(); } },
+        [paso.textoBoton || 'Entendido']);
+      pie.append(b);
+      b.focus();
+    }
+
+    function pintarAlternativas(paso) {
+      // Se baraja pero conservando cual era la correcta.
+      const opciones = paso.mezclar === false
+        ? paso.opciones.map((o, i) => ({ o, i }))
+        : mezclar(paso.opciones.map((o, i) => ({ o, i })));
+      let elegida = null;
+
+      const lista = h('div', { class: 'opciones' + (paso.columnas ? ` col-${paso.columnas}` : '') });
+      opciones.forEach(({ o, i }, pos) => {
+        const texto = typeof o === 'string' ? o : o.texto;
+        const btn = h('button', {
+          class: 'opcion', type: 'button', dataset: { indice: String(i) },
+          onClick: () => {
+            lista.querySelectorAll('.opcion').forEach((x) => x.classList.remove('elegida'));
+            btn.classList.add('elegida');
+            elegida = i;
+            comprobar.disabled = false;
+          },
+        }, [
+          h('kbd', {}, [String(pos + 1)]),
+          h('span', { html: texto }),
+        ]);
+        lista.appendChild(btn);
+      });
+
+      escena.append(h('div', { class: 'paso paso-preg' }, [
+        h('h2', { class: 'enunciado', html: paso.pregunta }),
+        construirVisual(paso),
+        lista,
+      ]));
+
+      const comprobar = h('button', {
+        class: 'btn principal', disabled: 'true',
+        onClick: () => {
+          const ok = elegida === paso.correcta;
+          lista.querySelectorAll('.opcion').forEach((b) => {
+            b.disabled = true;
+            const i = Number(b.dataset.indice);
+            if (i === paso.correcta) b.classList.add('correcta');
+            else if (i === elegida) b.classList.add('incorrecta');
+          });
+          const buena = paso.opciones[paso.correcta];
+          const textoBueno = typeof buena === 'string' ? buena : buena.texto;
+          resolverPaso(paso, ok, {
+            titulo: ok ? (paso.elogio || '¡Correcto!') : 'No es esa',
+            detalle: ok
+              ? (paso.explicacion || '')
+              : `<p class="respuesta-buena">Respuesta correcta: <b>${textoBueno}</b></p>${paso.explicacion || ''}`,
+          });
+        },
+      }, ['Comprobar']);
+      comprobar.disabled = true;
+      pie.append(comprobar);
+
+      // Atajos 1..9 para responder con teclado.
+      const porTeclado = (ev) => {
+        const n = Number(ev.key);
+        if (n >= 1 && n <= opciones.length) lista.querySelectorAll('.opcion')[n - 1]?.click();
+        if (ev.key === 'Enter' && !comprobar.disabled) comprobar.click();
+      };
+      escena.dataset.teclado = '1';
+      document.addEventListener('keydown', porTeclado);
+      escena._limpiar = () => document.removeEventListener('keydown', porTeclado);
+    }
+
+    function pintarCompletar(paso) {
+      const bloque = h('div', { class: 'paso paso-completar' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        construirVisual(paso),
+        paso.pista ? h('details', { class: 'pista' }, [
+          h('summary', {}, ['Ver pista']),
+          h('div', { class: 'prosa', html: paso.pista }),
+        ]) : null,
+      ]);
+      escena.append(bloque);
+
+      const inputs = [...bloque.querySelectorAll('input[data-hueco]')];
+      const comprobar = h('button', { class: 'btn principal', disabled: 'true' }, ['Comprobar']);
+
+      const revisarLlenado = () => {
+        comprobar.disabled = !inputs.every((i) => i.value.trim() !== '');
+      };
+      inputs.forEach((i) => {
+        i.addEventListener('input', revisarLlenado);
+        i.addEventListener('keydown', (ev) => {
+          if (ev.key !== 'Enter') return;
+          ev.preventDefault();
+          if (!comprobar.disabled) comprobar.click();
+        });
+      });
+      inputs[0]?.focus();
+
+      comprobar.addEventListener('click', () => {
+        let todoOk = true;
+        const errores = [];
+        for (const input of inputs) {
+          const def = paso.huecos.find((x) => x.id === input.dataset.hueco);
+          if (!def) continue;
+          const v = aNumero(input.value);
+          const ok = coincide(v, def.respuesta, def.tolerancia ?? 0.01);
+          input.closest('.cz-hueco')?.classList.add(ok ? 'ok' : 'mal');
+          input.disabled = true;
+          if (!ok) {
+            todoOk = false;
+            errores.push(`<li><b>${def.etiqueta || def.id}</b> = ${formatear(def.respuesta, def.unidad || '')}</li>`);
+          }
+        }
+        comprobar.disabled = true;
+        resolverPaso(paso, todoOk, {
+          titulo: todoOk ? (paso.elogio || '¡Circuito resuelto!') : 'Hay valores que no cuadran',
+          detalle: todoOk
+            ? (paso.explicacion || '')
+            : `<ul class="lista-errores">${errores.join('')}</ul>${paso.solucion || paso.explicacion || ''}`,
+        });
+      });
+      pie.append(comprobar);
+    }
+
+    function pintarEntrada(paso) {
+      const campo = h('input', {
+        type: 'text', inputmode: 'decimal', autocomplete: 'off', spellcheck: 'false',
+        class: 'entrada-grande', placeholder: paso.placeholder || '?',
+        'aria-label': paso.enunciado?.replace(/<[^>]+>/g, '') || 'Respuesta',
+      });
+      escena.append(h('div', { class: 'paso paso-entrada' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        construirVisual(paso),
+        h('div', { class: 'campo-unidad' }, [campo, paso.unidad ? h('span', {}, [paso.unidad]) : null]),
+        paso.pista ? h('details', { class: 'pista' }, [
+          h('summary', {}, ['Ver pista']), h('div', { class: 'prosa', html: paso.pista }),
+        ]) : null,
+      ]));
+
+      const comprobar = h('button', { class: 'btn principal', disabled: 'true' }, ['Comprobar']);
+      campo.addEventListener('input', () => { comprobar.disabled = campo.value.trim() === ''; });
+      campo.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' && !comprobar.disabled) { ev.preventDefault(); comprobar.click(); }
+      });
+      campo.focus();
+
+      comprobar.addEventListener('click', () => {
+        const v = aNumero(campo.value);
+        const ok = coincide(v, paso.respuesta, paso.tolerancia ?? 0.01);
+        campo.disabled = true;
+        campo.classList.add(ok ? 'ok' : 'mal');
+        comprobar.disabled = true;
+        resolverPaso(paso, ok, {
+          titulo: ok ? (paso.elogio || '¡Exacto!') : 'No es ese numero',
+          detalle: ok
+            ? (paso.explicacion || '')
+            : `<p class="respuesta-buena">Respuesta: <b>${formatear(paso.respuesta, paso.unidad || '')}</b></p>${paso.solucion || paso.explicacion || ''}`,
+        });
+      });
+      pie.append(comprobar);
+    }
+
+    /**
+     * Marca todas las correctas. Se corrige como conjunto: acertar tres de
+     * cuatro no es acertar, porque justamente se evalua saber donde parar.
+     */
+    function pintarMultiple(paso) {
+      const elegidas = new Set();
+      const lista = h('div', { class: 'opciones' });
+
+      const barajadas = paso.mezclar === false
+        ? paso.opciones.map((o, i) => ({ o, i }))
+        : mezclar(paso.opciones.map((o, i) => ({ o, i })));
+
+      barajadas.forEach(({ o, i }) => {
+        const btn = h('button', {
+          class: 'opcion marcable', type: 'button', dataset: { indice: String(i) },
+          'aria-pressed': 'false',
+          onClick: () => {
+            const activa = elegidas.has(i);
+            if (activa) elegidas.delete(i); else elegidas.add(i);
+            btn.classList.toggle('elegida', !activa);
+            btn.setAttribute('aria-pressed', String(!activa));
+            comprobar.disabled = elegidas.size === 0;
+          },
+        }, [h('span', { class: 'casilla' }), h('span', { html: typeof o === 'string' ? o : o.texto })]);
+        lista.appendChild(btn);
+      });
+
+      escena.append(h('div', { class: 'paso paso-preg' }, [
+        h('h2', { class: 'enunciado', html: paso.pregunta }),
+        h('p', { class: 'instruccion' }, ['Puede haber más de una correcta.']),
+        construirVisual(paso),
+        lista,
+      ]));
+
+      const comprobar = h('button', {
+        class: 'btn principal', disabled: 'true',
+        onClick: () => {
+          const esperadas = new Set(paso.correctas);
+          const ok = esperadas.size === elegidas.size && [...esperadas].every((i) => elegidas.has(i));
+          lista.querySelectorAll('.opcion').forEach((b) => {
+            b.disabled = true;
+            const i = Number(b.dataset.indice);
+            if (esperadas.has(i)) b.classList.add('correcta');
+            else if (elegidas.has(i)) b.classList.add('incorrecta');
+          });
+          const nombres = paso.correctas
+            .map((i) => (typeof paso.opciones[i] === 'string' ? paso.opciones[i] : paso.opciones[i].texto))
+            .map((x) => `<li>${x}</li>`).join('');
+          resolverPaso(paso, ok, {
+            titulo: ok ? (paso.elogio || '¡Todas!') : 'No es esa combinación',
+            detalle: ok ? (paso.explicacion || '')
+              : `<p class="respuesta-buena">Las correctas eran:</p><ul class="lista-errores">${nombres}</ul>${paso.explicacion || ''}`,
+          });
+        },
+      }, ['Comprobar']);
+      comprobar.disabled = true;
+      pie.append(comprobar);
+    }
+
+    /**
+     * Unir dos columnas. Se resuelve par a par y el error se avisa al instante,
+     * que es lo que hace que emparejar sirva para memorizar.
+     */
+    function pintarEmparejar(paso) {
+      const izq = mezclar(paso.pares.map((p, i) => ({ txt: p.a, i })));
+      const der = mezclar(paso.pares.map((p, i) => ({ txt: p.b, i })));
+      let selIzq = null;
+      let resueltos = 0;
+      let huboError = false;
+
+      const colIzq = h('div', { class: 'col-emparejar' });
+      const colDer = h('div', { class: 'col-emparejar' });
+
+      const limpiarSel = () => {
+        colIzq.querySelectorAll('.ficha').forEach((f) => f.classList.remove('elegida'));
+        selIzq = null;
+      };
+
+      const intentar = (fichaDer, indiceDer) => {
+        if (!selIzq) return;
+        const fichaIzq = selIzq.nodo;
+        if (selIzq.indice === indiceDer) {
+          [fichaIzq, fichaDer].forEach((f) => {
+            f.classList.remove('elegida');
+            f.classList.add('resuelta');
+            f.disabled = true;
+          });
+          // Las resueltas bajan al pie de su columna: las pendientes quedan
+          // arriba y, al terminar, cada par se lee en la misma fila.
+          colIzq.appendChild(fichaIzq);
+          colDer.appendChild(fichaDer);
+          resueltos++;
+          limpiarSel();
+          if (resueltos === paso.pares.length) {
+            resolverPaso(paso, !huboError, {
+              titulo: huboError ? 'Listo, pero con tropiezos' : (paso.elogio || '¡Todo emparejado!'),
+              detalle: paso.explicacion || '',
+            });
+          }
+        } else {
+          huboError = true;
+          [fichaIzq, fichaDer].forEach((f) => {
+            f.classList.add('falla');
+            setTimeout(() => f.classList.remove('falla'), 550);
+          });
+          limpiarSel();
+        }
+      };
+
+      izq.forEach(({ txt, i }) => {
+        const f = h('button', {
+          class: 'ficha', type: 'button',
+          onClick: () => {
+            if (f.classList.contains('resuelta')) return;
+            limpiarSel();
+            f.classList.add('elegida');
+            selIzq = { nodo: f, indice: i };
+          },
+        }, [h('span', { html: txt })]);
+        colIzq.appendChild(f);
+      });
+
+      der.forEach(({ txt, i }) => {
+        const f = h('button', {
+          class: 'ficha', type: 'button',
+          onClick: () => { if (!f.classList.contains('resuelta')) intentar(f, i); },
+        }, [h('span', { html: txt })]);
+        colDer.appendChild(f);
+      });
+
+      escena.append(h('div', { class: 'paso paso-emparejar' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        h('p', { class: 'instruccion' }, ['Toca uno de cada lado para unirlos.']),
+        h('div', { class: 'emparejar' }, [colIzq, colDer]),
+      ]));
+      // No hay boton: el paso se cierra solo al emparejarlo todo.
+    }
+
+    /**
+     * Ordenar una secuencia tocando en orden. Se usa click numerado en vez de
+     * arrastrar porque con el dedo el arrastre falla y aca lo evaluado es el
+     * orden, no la destreza.
+     */
+    function pintarOrdenar(paso) {
+      const barajados = mezclar(paso.pasos.map((txt, i) => ({ txt, i })));
+      const elegidos = [];
+
+      const lista = h('div', { class: 'opciones' });
+      barajados.forEach(({ txt, i }) => {
+        const btn = h('button', {
+          class: 'opcion ordenable', type: 'button', dataset: { indice: String(i) },
+          onClick: () => {
+            if (btn.classList.contains('puesta')) return;
+            elegidos.push(i);
+            btn.classList.add('puesta');
+            btn.querySelector('kbd').textContent = String(elegidos.length);
+            comprobar.disabled = elegidos.length !== paso.pasos.length;
+          },
+        }, [h('kbd', {}, ['·']), h('span', { html: txt })]);
+        lista.appendChild(btn);
+      });
+
+      const deshacer = h('button', {
+        class: 'btn secundario chico',
+        onClick: () => {
+          const ultimo = elegidos.pop();
+          if (ultimo === undefined) return;
+          const btn = lista.querySelector(`[data-indice="${ultimo}"]`);
+          btn.classList.remove('puesta');
+          btn.querySelector('kbd').textContent = '·';
+          comprobar.disabled = true;
+        },
+      }, ['Deshacer']);
+
+      escena.append(h('div', { class: 'paso paso-preg' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        h('p', { class: 'instruccion' }, ['Tócalos en el orden correcto.']),
+        construirVisual(paso),
+        lista,
+        deshacer,
+      ]));
+
+      const comprobar = h('button', {
+        class: 'btn principal', disabled: 'true',
+        onClick: () => {
+          const ok = elegidos.every((v, k) => v === k);
+          lista.querySelectorAll('.opcion').forEach((b) => {
+            b.disabled = true;
+            const i = Number(b.dataset.indice);
+            b.classList.add(elegidos[i] === i ? 'correcta' : 'incorrecta');
+          });
+          deshacer.disabled = true;
+          const bueno = paso.pasos.map((x, k) => `<li>${k + 1}. ${x}</li>`).join('');
+          resolverPaso(paso, ok, {
+            titulo: ok ? (paso.elogio || '¡Orden correcto!') : 'Ese no es el orden',
+            detalle: ok ? (paso.explicacion || '')
+              : `<p class="respuesta-buena">El orden era:</p><ul class="lista-errores">${bueno}</ul>${paso.explicacion || ''}`,
+          });
+        },
+      }, ['Comprobar']);
+      comprobar.disabled = true;
+      pie.append(comprobar);
+    }
+
+    /**
+     * Señalar un componente sobre el propio diagrama. Es el formato que mas se
+     * parece a leer un esquema de verdad: no hay alternativas que descarten por
+     * eliminacion, hay que mirar el circuito.
+     */
+    function pintarSenalar(paso) {
+      const bloque = h('div', { class: 'paso paso-senalar' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        h('p', { class: 'instruccion' }, ['Toca el componente en el diagrama.']),
+        construirVisual(paso),
+      ]);
+      escena.append(bloque);
+
+      let elegido = null;
+      const comps = [...bloque.querySelectorAll('[data-comp]')];
+      const marcar = (g) => {
+        comps.forEach((c) => c.classList.remove('cz-elegido'));
+        g.classList.add('cz-elegido');
+        elegido = g.dataset.comp;
+        comprobar.disabled = false;
+      };
+      comps.forEach((g) => {
+        g.addEventListener('click', () => marcar(g));
+        g.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); marcar(g); }
+        });
+      });
+
+      const comprobar = h('button', {
+        class: 'btn principal', disabled: 'true',
+        onClick: () => {
+          const ok = elegido === paso.correcta;
+          comps.forEach((g) => {
+            g.classList.remove('cz-elegido');
+            g.style.pointerEvents = 'none';
+            if (g.dataset.comp === paso.correcta) g.classList.add('cz-ok');
+            else if (g.dataset.comp === elegido) g.classList.add('cz-mal');
+          });
+          comprobar.disabled = true;
+          resolverPaso(paso, ok, {
+            titulo: ok ? (paso.elogio || '¡Ese es!') : 'No es ese',
+            detalle: ok ? (paso.explicacion || '')
+              : `<p class="respuesta-buena">Era <b>${paso.nombreCorrecto || paso.correcta}</b>.</p>${paso.explicacion || ''}`,
+          });
+        },
+      }, ['Comprobar']);
+      comprobar.disabled = true;
+      pie.append(comprobar);
+    }
+
+    // ── Bucle principal ──
+
+    function siguiente() {
+      escena._limpiar?.();
+      escena._limpiar = null;
+
+      if (indice >= cola.length) return terminar();
+
+      if (sincronizarVidas() === 0) return sinVidas();
+
+      const paso = cola[indice++];
+      escena.innerHTML = '';
+      limpiarPie();
+      pintarVidas();
+
+      if (paso._reintento) {
+        escena.append(h('div', { class: 'aviso-reintento' }, ['Volvamos a esta']));
+      }
+
+      const pintores = {
+        info: pintarInfo,
+        alternativas: pintarAlternativas,
+        completar: pintarCompletar,
+        entrada: pintarEntrada,
+        multiple: pintarMultiple,
+        emparejar: pintarEmparejar,
+        ordenar: pintarOrdenar,
+        senalar: pintarSenalar,
+      };
+      (pintores[paso.tipo] || pintarInfo)(paso);
+      escena.scrollTop = 0;
+    }
+
+    function sinVidas() {
+      escena.innerHTML = '';
+      limpiarPie();
+      escena.append(h('div', { class: 'paso paso-fin' }, [
+        h('div', { class: 'paso-emoji' }, ['💔']),
+        h('h2', {}, ['Te quedaste sin vidas']),
+        h('p', { class: 'prosa' }, ['Se recarga una vida cada 20 minutos. Puedes repasar teoria mientras tanto.']),
+      ]));
+      pie.append(h('button', { class: 'btn principal', onClick: () => {
+        alSalir?.();
+        resolver({ completada: false, aciertos, fallos, xp: 0, estrellas: 0 });
+      } }, ['Volver al mapa']));
+    }
+
+    function terminar() {
+      const estrellas = fallos === 0 ? 3 : fallos <= 2 ? 2 : 1;
+      const xp = (leccion.xp || 20) + (fallos === 0 ? 10 : 0);
+      const precision = aciertos + fallos > 0 ? Math.round((aciertos / (aciertos + fallos)) * 100) : 100;
+
+      escena.innerHTML = '';
+      limpiarPie();
+      barraInterior.style.width = '100%';
+      escena.append(h('div', { class: 'paso paso-fin' }, [
+        h('div', { class: 'paso-emoji celebra' }, [fallos === 0 ? '⚡' : '🎉']),
+        h('h2', {}, [fallos === 0 ? '¡Leccion perfecta!' : '¡Leccion completada!']),
+        h('div', { class: 'estrellas' }, [1, 2, 3].map((i) =>
+          h('span', { class: i <= estrellas ? 'on' : '' }, ['★']))),
+        h('div', { class: 'resumen' }, [
+          h('div', { class: 'tarjeta-res xp' }, [h('b', {}, [`+${xp}`]), h('span', {}, ['XP'])]),
+          h('div', { class: 'tarjeta-res' }, [h('b', {}, [`${precision}%`]), h('span', {}, ['Precision'])]),
+        ]),
+      ]));
+      pie.append(h('button', { class: 'btn principal', onClick: () =>
+        resolver({ completada: true, aciertos, fallos, xp, estrellas }) }, ['Seguir']));
+    }
+
+    pintarVidas();
+    avanzarBarra();
+    siguiente();
+  });
+}
+
+
+
+
+/* ── js/visuales.js ── */
+// visuales.js — animaciones y widgets interactivos de las lecciones.
+//
+// Cada funcion devuelve un nodo listo para insertar. La regla que se sigue aca
+// es que el visual tiene que mostrar el mecanismo, no decorar: si el usuario
+// mueve algo, la magnitud fisica que cambia se ve cambiar.
+
+const s = svgEl;
+const t = svgTxt;
+
+
+// ── Analogia hidraulica ─────────────────────────────────────────────────────
+
+/**
+ * Estanque, canieria y valvula: la analogia clasica agua/electricidad.
+ * `resaltar` pinta una de las tres magnitudes ('voltaje' | 'corriente' |
+ * 'resistencia') para que la leccion pueda apuntar a una sola a la vez.
+ */
+function analogiaHidraulica(resaltar = null) {
+  const W = 480, H = 260;
+  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'viz viz-agua', role: 'img',
+    'aria-label': 'Analogia hidraulica: estanque, canieria y valvula' });
+  svg.appendChild(defsFlecha());
+
+  const marca = (q) => (resaltar === q ? ' resalta' : resaltar ? ' atenua' : '');
+
+  // Estanque elevado = diferencia de potencial.
+  const gT = s('g', { class: 'viz-g' + marca('voltaje') });
+  gT.appendChild(s('rect', { x: 24, y: 40, width: 96, height: 104, rx: 6, class: 'viz-tanque' }));
+  const agua = s('rect', { x: 27, y: 62, width: 90, height: 79, rx: 4, class: 'viz-agua-fill' });
+  gT.appendChild(agua);
+  gT.appendChild(s('line', { x1: 136, y1: 62, x2: 136, y2: 186, class: 'viz-cota' }));
+  gT.appendChild(s('line', { x1: 130, y1: 62, x2: 142, y2: 62, class: 'viz-cota' }));
+  gT.appendChild(s('line', { x1: 130, y1: 186, x2: 142, y2: 186, class: 'viz-cota' }));
+  gT.appendChild(s('text', { x: 148, y: 118, class: 'viz-rot' }, [t('altura = voltaje')]));
+  svg.appendChild(gT);
+
+  // Canieria con agua corriendo = corriente.
+  const gC = s('g', { class: 'viz-g' + marca('corriente') });
+  gC.appendChild(s('path', { d: 'M72 144 L72 186 L420 186', class: 'viz-tubo' }));
+  gC.appendChild(electrones('M72 150 L72 186 L420 186',
+    { cantidad: 7, dur: 3, clase: 'viz-gota', radio: 5 }));
+  gC.appendChild(s('text', { x: 300, y: 214, 'text-anchor': 'middle', class: 'viz-rot' },
+    [t('caudal = corriente')]));
+  svg.appendChild(gC);
+
+  // Estrechamiento = resistencia.
+  const gR = s('g', { class: 'viz-g' + marca('resistencia') });
+  gR.appendChild(s('path', { d: 'M280 172 L296 186 L280 200 Z', class: 'viz-valvula' }));
+  gR.appendChild(s('path', { d: 'M312 172 L296 186 L312 200 Z', class: 'viz-valvula' }));
+  gR.appendChild(s('text', { x: 296, y: 162, 'text-anchor': 'middle', class: 'viz-rot' },
+    [t('estrechamiento = resistencia')]));
+  svg.appendChild(gR);
+
+  // El nivel del estanque respira: recuerda que la fuente sostiene la presion.
+  const anim = s('animate', {
+    attributeName: 'height', values: '79;72;79', dur: '4s', repeatCount: 'indefinite',
+  });
+  const animY = s('animate', {
+    attributeName: 'y', values: '62;69;62', dur: '4s', repeatCount: 'indefinite',
+  });
+  agua.append(anim, animY);
+  return svg;
+}
+
+// ── Triangulo mnemotecnico de la ley de Ohm ─────────────────────────────────
+
+/** V arriba, I y R abajo: tapa la que buscas y te queda la formula. */
+function trianguloOhm(tapada = null) {
+  const svg = s('svg', { viewBox: '0 0 260 200', class: 'viz viz-triangulo', role: 'img',
+    'aria-label': 'Triangulo de la ley de Ohm' });
+  svg.appendChild(s('path', { d: 'M130 16 L242 186 L18 186 Z', class: 'viz-tri' }));
+  svg.appendChild(s('line', { x1: 62, y1: 118, x2: 198, y2: 118, class: 'viz-tri-div' }));
+  svg.appendChild(s('line', { x1: 130, y1: 118, x2: 130, y2: 186, class: 'viz-tri-div' }));
+
+  const celda = (x, y, letra, clave) => {
+    const g = s('g', { class: 'viz-celda' + (tapada === clave ? ' tapada' : '') });
+    g.appendChild(s('text', { x, y, 'text-anchor': 'middle', class: 'viz-letra' }, [t(letra)]));
+    if (tapada === clave) {
+      g.appendChild(s('circle', { cx: x, cy: y - 11, r: 26, class: 'viz-tapa-circ' }));
+    }
+    return g;
+  };
+  svg.appendChild(celda(130, 88, 'V', 'V'));
+  svg.appendChild(celda(88, 168, 'I', 'I'));
+  svg.appendChild(celda(174, 168, 'R', 'R'));
+  return svg;
+}
+
+// ── Laboratorio interactivo de la ley de Ohm ────────────────────────────────
+
+/**
+ * Sliders de V y R; se ve al instante como cambia I, como cambia la potencia y
+ * como responde la ampolleta. Es el widget donde la ley de Ohm deja de ser una
+ * formula y pasa a ser una intuicion.
+ */
+function laboratorioOhm({ v0 = 9, r0 = 100 } = {}) {
+  // El halo de la ampolleta lleva blur(9px), que se extiende unos 27 px mas alla
+  // de su radio. El riel superior va suficientemente abajo para que quepa entero.
+  const W = 470, H = 250;
+  const yT = 76, yB = 210, xL = 60, xR = 380;
+  const cyF = (yT + yB) / 2;
+  const cxAmp = 220;
+
+  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'viz viz-lab', role: 'img',
+    'aria-label': 'Circuito con fuente y resistencia variables alimentando una ampolleta' });
+  svg.appendChild(defsFlecha());
+
+  // Malla: fuente a la izquierda, ampolleta arriba, resistencia a la derecha.
+  svg.appendChild(s('polyline', { points: `${xL},${cyF - 23} ${xL},${yT} ${cxAmp - 30},${yT}`, class: 'cz-cable' }));
+  svg.appendChild(s('polyline', {
+    points: `${cxAmp + 30},${yT} ${xR},${yT} ${xR},${yB} ${xL},${yB} ${xL},${cyF + 23}`,
+    class: 'cz-cable',
+  }));
+
+  // Fuente
+  svg.appendChild(s('line', { x1: xL - 17, y1: cyF - 8, x2: xL + 17, y2: cyF - 8, class: 'cz-barra-larga' }));
+  svg.appendChild(s('line', { x1: xL - 8, y1: cyF + 8, x2: xL + 8, y2: cyF + 8, class: 'cz-barra-corta' }));
+  const etqV = s('text', { x: xL - 24, y: cyF + 5, 'text-anchor': 'end', class: 'cz-valor' }, [t('')]);
+  svg.appendChild(etqV);
+
+  // Ampolleta
+  const halo = s('circle', { cx: cxAmp, cy: yT, r: 34, class: 'viz-halo' });
+  svg.appendChild(halo);
+  const bulbo = s('circle', { cx: cxAmp, cy: yT, r: 21, class: 'viz-bulbo' });
+  svg.appendChild(bulbo);
+  svg.appendChild(s('path', {
+    d: `M${cxAmp - 11} ${yT} q5.5 -11 11 0 q5.5 11 11 0`, class: 'viz-filamento',
+  }));
+  svg.appendChild(s('line', { x1: cxAmp - 30, y1: yT, x2: cxAmp - 21, y2: yT, class: 'cz-cable' }));
+  svg.appendChild(s('line', { x1: cxAmp + 21, y1: yT, x2: cxAmp + 30, y2: yT, class: 'cz-cable' }));
+
+  // Resistencia (rama derecha, vertical)
+  const largo = 66, amp = 11, n = 6, paso = largo / n, ini = cyF - largo / 2;
+  const pts = [[xR, ini]];
+  for (let i = 0; i < n; i++) pts.push([xR + (i % 2 === 0 ? -1 : 1) * amp, ini + paso * (i + 0.5)]);
+  pts.push([xR, ini + largo]);
+  svg.appendChild(s('rect', { x: xR - 6, y: ini - 6, width: 12, height: largo + 12, class: 'cz-tapa' }));
+  svg.appendChild(s('path', {
+    d: pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' '), class: 'cz-zig',
+  }));
+  const etqR = s('text', { x: xR + 24, y: cyF + 5, class: 'cz-valor' }, [t('')]);
+  svg.appendChild(etqR);
+
+  // Electrones: su velocidad es la corriente.
+  const loop = `M${xL} ${cyF - 23} L${xL} ${yT} L${xR} ${yT} L${xR} ${yB} L${xL} ${yB} L${xL} ${cyF + 23}`;
+  let capaE = electrones(loop, { cantidad: 9, dur: 4 });
+  svg.appendChild(capaE);
+
+  // ── Controles y lectura ──
+  const lecturaI = h('b');
+  const lecturaP = h('b');
+  const salV = h('output');
+  const salR = h('output');
+
+  const slV = h('input', { type: 'range', min: '1', max: '24', step: '0.5', value: String(v0),
+    'aria-label': 'Voltaje de la fuente' });
+  const slR = h('input', { type: 'range', min: '10', max: '1000', step: '10', value: String(r0),
+    'aria-label': 'Resistencia' });
+
+  function actualizar() {
+    const V = Number(slV.value);
+    const R = Number(slR.value);
+    const I = V / R;
+    const P = V * I;
+
+    salV.textContent = `${V} V`;
+    salR.textContent = formatear(R, 'Ω');
+    etqV.firstChild.nodeValue = `${V} V`;
+    etqR.firstChild.nodeValue = formatear(R, 'Ω');
+    lecturaI.textContent = formatear(I, 'A');
+    lecturaP.textContent = formatear(P, 'W');
+
+    // El brillo satura: mas alla de ~0.9 W la ampolleta ya esta a full.
+    const brillo = Math.min(1, P / 0.9);
+    halo.setAttribute('opacity', (brillo * 0.85).toFixed(3));
+    halo.setAttribute('r', String(26 + brillo * 16));
+    bulbo.style.setProperty('--brillo', brillo.toFixed(3));
+
+    // Redibujar los electrones es la unica via fiable de cambiar el `dur` de
+    // animateMotion en todos los navegadores.
+    const dur = Math.max(0.35, Math.min(9, 0.45 / Math.max(I, 1e-4)));
+    const nuevo = electrones(loop, { cantidad: 9, dur });
+    svg.replaceChild(nuevo, capaE);
+    capaE = nuevo;
+  }
+
+  slV.addEventListener('input', actualizar);
+  slR.addEventListener('input', actualizar);
+
+  const panel = h('div', { class: 'lab' }, [
+    svg,
+    h('div', { class: 'lab-lecturas' }, [
+      h('div', { class: 'lect' }, [h('span', {}, ['Corriente I']), lecturaI]),
+      h('div', { class: 'lect' }, [h('span', {}, ['Potencia P']), lecturaP]),
+    ]),
+    h('div', { class: 'lab-controles' }, [
+      h('label', {}, [h('span', {}, ['Voltaje V ', salV]), slV]),
+      h('label', {}, [h('span', {}, ['Resistencia R ', salR]), slR]),
+    ]),
+  ]);
+  actualizar();
+  return panel;
+}
+
+// ── Cable ancho vs cable angosto ────────────────────────────────────────────
+
+/** Por que un conductor mas delgado resiste mas: menos ancho, menos paso. */
+function seccionConductor() {
+  const svg = s('svg', { viewBox: '0 0 460 200', class: 'viz', role: 'img',
+    'aria-label': 'Comparacion entre conductor grueso y delgado' });
+
+  const via = (y, alto, dur, rot) => {
+    const g = s('g', {});
+    g.appendChild(s('rect', { x: 70, y: y - alto / 2, width: 320, height: alto, rx: alto / 2, class: 'viz-tubo-r' }));
+    const cant = Math.max(3, Math.round(alto / 9));
+    for (let i = 0; i < cant; i++) {
+      const yy = y - alto / 2 + (alto / (cant + 1)) * (i + 1);
+      g.appendChild(electrones(`M74 ${yy} L386 ${yy}`, { cantidad: 5, dur }));
+    }
+    g.appendChild(s('text', { x: 30, y: y + 5, 'text-anchor': 'middle', class: 'viz-rot' }, [t(rot)]));
+    return g;
+  };
+
+  svg.appendChild(via(60, 46, 2.4, 'ancho'));
+  svg.appendChild(s('text', { x: 400, y: 65, class: 'viz-rot viz-ok' }, [t('R baja')]));
+  svg.appendChild(via(150, 16, 5.5, 'angosto'));
+  svg.appendChild(s('text', { x: 400, y: 155, class: 'viz-rot viz-mal' }, [t('R alta')]));
+  return svg;
+}
+
+// ── Serie vs paralelo, lado a lado ──────────────────────────────────────────
+
+/**
+ * Un solo camino contra varios.
+ *
+ * Se dibuja con el mismo lenguaje que los circuitos de los ejercicios —cable
+ * gris, zigzag, electrones ambar— y no con formas abstractas: la comparacion
+ * solo sirve si el alumno reconoce aqui lo mismo que va a ver despues.
+ */
+function serieVsParalelo() {
+  const W = 520, H = 250;
+  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'viz', role: 'img',
+    'aria-label': 'Comparacion entre una conexion serie y una paralelo' });
+
+  const yT = 74, yB = 188;
+  const cyF = (yT + yB) / 2;
+
+  /** Media fuente: solo las dos barras, sin etiqueta de valor. */
+  const pila = (cx) => {
+    const g = s('g', {});
+    g.appendChild(s('line', { x1: cx - 15, y1: cyF - 7, x2: cx + 15, y2: cyF - 7, class: 'cz-barra-larga' }));
+    g.appendChild(s('line', { x1: cx - 7, y1: cyF + 7, x2: cx + 7, y2: cyF + 7, class: 'cz-barra-corta' }));
+    return g;
+  };
+
+  // ── Serie: un lazo, y todo lo que circula pasa por las dos resistencias ──
+  const sL = 40, sR = 214;
+  svg.appendChild(s('text', { x: (sL + sR) / 2, y: 34, 'text-anchor': 'middle', class: 'viz-titulo' },
+    [t('SERIE')]));
+  svg.appendChild(cable([[sL, cyF - 22], [sL, yT], [sR, yT]]));
+  svg.appendChild(cable([[sR, yT], [sR, yB], [sL, yB], [sL, cyF + 22]]));
+  svg.appendChild(pila(sL));
+
+  const pasoS = (sR - sL) / 3;
+  [1, 2].forEach((k) => {
+    const cx = sL + pasoS * k;
+    svg.appendChild(s('rect', { x: cx - 20, y: yT - 6, width: 40, height: 12, class: 'cz-tapa' }));
+    svg.appendChild(zigzag(cx, yT, 34, false, 9));
+    svg.appendChild(s('text', { x: cx, y: yT - 16, 'text-anchor': 'middle', class: 'viz-rot' },
+      [t(`R${k === 1 ? '₁' : '₂'}`)]));
+  });
+
+  svg.appendChild(electrones(
+    `M${sL} ${cyF - 22} L${sL} ${yT} L${sR} ${yT} L${sR} ${yB} L${sL} ${yB} L${sL} ${cyF + 22}`,
+    { cantidad: 7, dur: 5 }));
+  svg.appendChild(s('text', { x: (sL + sR) / 2, y: 220, 'text-anchor': 'middle', class: 'viz-rot' },
+    [t('misma I, se suman las R')]));
+
+  // ── Paralelo: dos ramas, y el flujo se reparte entre ellas ──
+  const pL = 306, pR = 480;
+  svg.appendChild(s('text', { x: (pL + pR) / 2, y: 34, 'text-anchor': 'middle', class: 'viz-titulo' },
+    [t('PARALELO')]));
+  const ramas = [pL + 76, pR];
+  svg.appendChild(cable([[pL, cyF - 22], [pL, yT], [pR, yT]]));
+  svg.appendChild(cable([[pL, cyF + 22], [pL, yB], [pR, yB]]));
+  svg.appendChild(pila(pL));
+
+  ramas.forEach((x, i) => {
+    svg.appendChild(cable([[x, yT], [x, yB]]));
+    svg.appendChild(s('rect', { x: x - 6, y: cyF - 20, width: 12, height: 40, class: 'cz-tapa' }));
+    svg.appendChild(zigzag(x, cyF, 34, true, 9));
+    svg.appendChild(s('text', {
+      x: i === 0 ? x - 14 : x + 14, y: cyF + 4,
+      'text-anchor': i === 0 ? 'end' : 'start', class: 'viz-rot',
+    }, [t(i === 0 ? 'R₁' : 'R₂')]));
+  });
+
+  // Dos recorridos distintos: el que se desvia por la primera rama va mas
+  // rapido y lleva mas puntos, porque por ahi pasa mas corriente.
+  svg.appendChild(electrones(
+    `M${pL} ${cyF - 22} L${pL} ${yT} L${ramas[0]} ${yT} L${ramas[0]} ${yB} L${pL} ${yB} L${pL} ${cyF + 22}`,
+    { cantidad: 5, dur: 3 }));
+  svg.appendChild(electrones(
+    `M${pL} ${cyF - 22} L${pL} ${yT} L${ramas[1]} ${yT} L${ramas[1]} ${yB} L${pL} ${yB} L${pL} ${cyF + 22}`,
+    { cantidad: 6, dur: 4.2 }));
+  svg.appendChild(s('circle', { cx: ramas[0], cy: yT, r: 4, class: 'cz-nodo' }));
+  svg.appendChild(s('circle', { cx: ramas[0], cy: yB, r: 4, class: 'cz-nodo' }));
+
+  svg.appendChild(s('text', { x: (pL + pR) / 2, y: 220, 'text-anchor': 'middle', class: 'viz-rot' },
+    [t('mismo V, se reparte la I')]));
+  return svg;
+}
+
+// ── Divisor de voltaje animado ──────────────────────────────────────────────
+
+/** La caida se reparte en proporcion a cada R: se ve como dos barras. */
+function barrasDivisor(v, r1, r2) {
+  const total = r1 + r2;
+  const v1 = (v * r1) / total;
+  const v2 = (v * r2) / total;
+  const anchoTotal = 380;
+  const svg = s('svg', { viewBox: '0 0 440 150', class: 'viz', role: 'img',
+    'aria-label': 'Reparto del voltaje entre dos resistencias' });
+
+  const barra = (y, ancho, texto, clase) => {
+    const g = s('g', {});
+    g.appendChild(s('rect', { x: 30, y, width: ancho, height: 38, rx: 8, class: `viz-barra ${clase}` }));
+    // Con repartos muy desiguales la barra chica no alcanza para su propio
+    // rotulo: entonces el texto se escribe al lado, en color de texto normal.
+    const anchoTexto = texto.length * 8.2;
+    const cabeDentro = ancho >= anchoTexto + 14;
+    g.appendChild(s('text', {
+      x: cabeDentro ? 30 + ancho / 2 : 30 + ancho + 10,
+      y: y + 25,
+      'text-anchor': cabeDentro ? 'middle' : 'start',
+      class: cabeDentro ? 'viz-barra-txt' : 'viz-barra-txt fuera',
+    }, [t(texto)]));
+    return g;
+  };
+  svg.appendChild(s('text', { x: 30, y: 22, class: 'viz-rot' }, [t(`Fuente: ${v} V`)]));
+  svg.appendChild(barra(34, anchoTotal * (r1 / total), `V₁ = ${v1.toFixed(2)} V`, 'b1'));
+  svg.appendChild(barra(86, anchoTotal * (r2 / total), `V₂ = ${v2.toFixed(2)} V`, 'b2'));
+  svg.appendChild(s('text', { x: 30, y: 142, class: 'viz-rot' },
+    [t(`R₁ = ${formatear(r1, 'Ω')}   ·   R₂ = ${formatear(r2, 'Ω')}`)]));
+  return svg;
+}
+
+
+/* ── lecciones/01-fundamentos.js ── */
+// 01-fundamentos.js — voltaje, corriente, resistencia y la ley de Ohm.
+
+
+
+const __def__01_fundamentos = {
+  id: 'fundamentos',
+  titulo: 'Fundamentos',
+  subtitulo: 'Voltaje, corriente y resistencia',
+  icono: '⚡',
+  color: 'ambar',
+  lecciones: [
+
+    // ── 1.1 ──────────────────────────────────────────────────────────────
+    {
+      id: 'f-corriente',
+      titulo: 'La corriente',
+      xp: 20,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🌊',
+          titulo: 'Corriente: carga en movimiento',
+          visual: () => analogiaHidraulica('corriente'),
+          cuerpo: `
+            <p>La <b>corriente eléctrica</b> es el paso de carga por un punto del circuito.
+            No es "electricidad que se gasta": es carga que <i>circula</i>.</p>
+            <p class="formula">I = Q / t</p>
+            <p>Si por un punto pasa <b>1 coulomb cada segundo</b>, ahí hay <b>1 ampere</b>.</p>
+            <p class="dato">Se mide en <b>amperes (A)</b>, en honor a André-Marie Ampère.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: '¿Qué mide exactamente la corriente eléctrica?',
+          opciones: [
+            'La cantidad de carga que pasa por un punto cada segundo',
+            'La fuerza con que la fuente empuja las cargas',
+            'La energía total almacenada en la batería',
+            'La oposición que el material pone al paso de carga',
+          ],
+          correcta: 0,
+          explicacion: `<p>Corriente es <b>caudal de carga</b>: I = Q/t. Las otras tres describen
+            voltaje, energía y resistencia respectivamente.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Por un conductor pasan <b>6 coulomb en 2 segundos</b>. ¿Cuánta corriente circula?',
+          opciones: ['3 A', '12 A', '0.33 A', '6 A'],
+          correcta: 0,
+          explicacion: `<p>I = Q/t = 6 C / 2 s = <b>3 A</b>. Ojo con invertir la división: t/Q daría 0.33,
+            que es un error clásico.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'En un circuito <b>abierto</b> (un cable cortado), ¿qué pasa con la corriente?',
+          opciones: [
+            'Es cero: no hay camino cerrado por donde circular',
+            'Se duplica, porque ya no hay resistencia',
+            'Sigue igual, la carga salta el corte',
+            'Depende solo del voltaje de la fuente',
+          ],
+          correcta: 0,
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '9 V' },
+            ramas: [{ nombre: 'R', valor: '100 Ω' }],
+            corriente: { velocidad: 0 },
+            nota: 'circuito abierto: nada circula',
+          },
+          explicacion: `<p>La corriente necesita un <b>camino cerrado</b>. Sin lazo completo no
+            circula carga, por mucho voltaje que tenga la fuente.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Si por una sección pasan <b>0.5 C</b> en <b>250 ms</b>, ¿cuál es la corriente?',
+          unidad: 'A',
+          respuesta: 2,
+          pista: '<p>Pasa todo a unidades base: 250 ms = 0.25 s. Después, I = Q/t.</p>',
+          solucion: '<p>I = 0.5 C / 0.25 s = <b>2 A</b>.</p>',
+        },
+        {
+          tipo: 'entrada',
+          enunciado: '¿Cuánta carga pasa en <b>1 minuto</b> por un punto donde circulan <b>150 mA</b>?',
+          unidad: 'C',
+          respuesta: 9,
+          pista: '<p>Despeja Q de I = Q/t. Y ojo: el minuto hay que pasarlo a segundos.</p>',
+          solucion: '<p>Q = I·t = 0.15 A × 60 s = <b>9 C</b>.</p>',
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Cuáles de estas afirmaciones sobre la corriente son <b>correctas</b>?',
+          opciones: [
+            'Necesita un camino cerrado para circular',
+            'Se mide en amperes',
+            'Es carga que se desplaza, no energía que se consume',
+            'Se gasta a medida que recorre el circuito',
+            'Solo existe si hay una batería química',
+          ],
+          correctas: [0, 1, 2],
+          explicacion: `<p>Las tres primeras son la definición misma. Las otras dos son los dos
+            malentendidos más comunes: la carga <b>no se gasta</b> (lo que se transforma es la
+            energía que transporta), y cualquier fuente de voltaje sirve, no solo una pila.</p>`,
+        },
+      ],
+    },
+
+    // ── 1.2 ──────────────────────────────────────────────────────────────
+    {
+      id: 'f-voltaje',
+      titulo: 'El voltaje',
+      xp: 20,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🔋',
+          titulo: 'Voltaje: la diferencia que empuja',
+          visual: () => analogiaHidraulica('voltaje'),
+          cuerpo: `
+            <p>El <b>voltaje</b> es la energía que gana o pierde cada unidad de carga al moverse
+            entre dos puntos. Por eso su nombre formal es <b>diferencia de potencial</b>.</p>
+            <p class="formula">V = E / Q</p>
+            <p><b>1 volt</b> = 1 joule por coulomb.</p>
+            <p class="dato">Clave: el voltaje <b>siempre es entre dos puntos</b>. Decir "el voltaje
+            en este nodo" solo tiene sentido si hay una referencia (tierra) implícita.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: '¿Por qué se dice que el voltaje es una magnitud <b>entre dos puntos</b>?',
+          opciones: [
+            'Porque es una diferencia de potencial: siempre se mide respecto de una referencia',
+            'Porque el voltímetro tiene dos puntas de prueba',
+            'Porque la batería tiene dos terminales',
+            'Porque el voltaje se reparte a la mitad entre ambos puntos',
+          ],
+          correcta: 0,
+          explicacion: `<p>Es una <b>diferencia</b>. Que el instrumento tenga dos puntas es la
+            consecuencia, no la causa. Un solo punto no tiene voltaje propio sin referencia.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Una batería entrega <b>36 J</b> a cada <b>3 C</b> de carga que la atraviesa. ¿Qué voltaje tiene?',
+          opciones: ['12 V', '108 V', '0.083 V', '39 V'],
+          correcta: 0,
+          explicacion: `<p>V = E/Q = 36 J / 3 C = <b>12 V</b>. El volt es literalmente joule por coulomb.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'En la analogía hidráulica, ¿a qué corresponde el voltaje?',
+          visual: () => analogiaHidraulica('voltaje'),
+          opciones: [
+            'A la altura del estanque (la presión disponible)',
+            'Al caudal de agua que baja por la cañería',
+            'Al ancho de la cañería',
+            'Al volumen total de agua acumulada',
+          ],
+          correcta: 0,
+          explicacion: `<p>La <b>altura</b> es lo que empuja. El caudal es la corriente y el
+            estrechamiento es la resistencia. El volumen se parece más a la carga almacenada.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: '¿Cuánta energía entrega una fuente de <b>5 V</b> a <b>4 C</b> de carga?',
+          unidad: 'J',
+          respuesta: 20,
+          pista: '<p>El volt es joule por coulomb, así que E = V · Q.</p>',
+          solucion: '<p>E = 5 × 4 = <b>20 J</b>.</p>',
+        },
+        {
+          tipo: 'emparejar',
+          enunciado: 'Une cada magnitud con su unidad',
+          pares: [
+            { a: 'Voltaje', b: 'volt (V)' },
+            { a: 'Corriente', b: 'ampere (A)' },
+            { a: 'Resistencia', b: 'ohm (Ω)' },
+            { a: 'Carga', b: 'coulomb (C)' },
+            { a: 'Energía', b: 'joule (J)' },
+          ],
+          explicacion: `<p>Las unidades no son arbitrarias: <b>1 V = 1 J/C</b> y <b>1 A = 1 C/s</b>.
+            Cada una está definida a partir de las otras.</p>`,
+        },
+      ],
+    },
+
+    // ── 1.3 ──────────────────────────────────────────────────────────────
+    {
+      id: 'f-resistencia',
+      titulo: 'La resistencia',
+      xp: 20,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🧱',
+          titulo: 'Resistencia: cuánto cuesta pasar',
+          visual: () => analogiaHidraulica('resistencia'),
+          cuerpo: `
+            <p>La <b>resistencia</b> mide la oposición de un material al paso de la corriente.
+            Se mide en <b>ohm (Ω)</b>.</p>
+            <p class="formula">R = ρ · L / A</p>
+            <p>Depende de tres cosas: el material (<b>ρ</b>, resistividad), el <b>largo L</b>
+            (más largo, más resistencia) y la <b>sección A</b> (más grueso, menos resistencia).</p>
+            <p class="dato">Esa energía que "cuesta pasar" no desaparece: se convierte en calor.
+            Es exactamente el principio de una estufa eléctrica.</p>`,
+        },
+        {
+          tipo: 'info',
+          emoji: '🪢',
+          titulo: 'Grueso contra delgado',
+          visual: () => seccionConductor(),
+          cuerpo: `<p>Con el mismo material y el mismo largo, el conductor de mayor sección deja
+            pasar la carga con mucha menos oposición. Por eso los cables de alta corriente son gruesos.</p>`,
+          textoBoton: 'Tiene sentido',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Si <b>duplicas el largo</b> de un cable sin cambiar nada más, su resistencia…',
+          opciones: [
+            'Se duplica',
+            'Se reduce a la mitad',
+            'Queda igual',
+            'Se multiplica por cuatro',
+          ],
+          correcta: 0,
+          explicacion: `<p>En R = ρL/A el largo está en el <b>numerador</b>: al doble de largo,
+            el doble de resistencia.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Si <b>duplicas el diámetro</b> de un cable, ¿qué pasa con su resistencia?',
+          opciones: [
+            'Cae a la cuarta parte',
+            'Cae a la mitad',
+            'Se duplica',
+            'No cambia',
+          ],
+          correcta: 0,
+          explicacion: `<p>Trampa clásica: la fórmula usa el <b>área</b>, no el diámetro.
+            Al doble de diámetro, A = πd²/4 crece <b>×4</b>, así que R cae a <b>1/4</b>.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: '¿Cuál de estos materiales tiene la <b>mayor</b> resistividad?',
+          opciones: ['Vidrio', 'Cobre', 'Aluminio', 'Plata'],
+          correcta: 0,
+          explicacion: `<p>El vidrio es un <b>aislante</b>: resistividad enorme. La plata es el mejor
+            conductor metálico, seguida del cobre; el aluminio conduce algo peor, pero pesa mucho menos,
+            y por eso se usa en líneas aéreas de transmisión.</p>`,
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Qué cambios hacen que la resistencia de un conductor <b>aumente</b>?',
+          opciones: [
+            'Hacerlo más largo',
+            'Hacerlo más delgado',
+            'Cambiarlo por un material de mayor resistividad',
+            'Hacerlo más grueso',
+            'Acortarlo',
+          ],
+          correctas: [0, 1, 2],
+          explicacion: `<p>En R = ρL/A suben la R las cosas que están en el <b>numerador</b>
+            (largo y resistividad) y bajarla las del <b>denominador</b> (área). Engrosar o acortar
+            siempre reduce la resistencia.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `Un cable tiene <b>4 Ω</b>. Si lo cortas por la mitad y usas solo un trozo,
+            ¿cuánta resistencia queda?`,
+          unidad: 'Ω',
+          respuesta: 2,
+          pista: '<p>La resistencia es proporcional al largo: la mitad de largo, la mitad de R.</p>',
+          solucion: '<p><b>2 Ω</b>. El material y la sección no cambiaron, solo el largo.</p>',
+        },
+      ],
+    },
+
+    // ── 1.4 ──────────────────────────────────────────────────────────────
+    {
+      id: 'f-ohm',
+      titulo: 'La ley de Ohm',
+      xp: 30,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🔺',
+          titulo: 'V = I · R',
+          visual: () => trianguloOhm(),
+          cuerpo: `
+            <p>Las tres magnitudes que viste están amarradas por una sola relación:</p>
+            <p class="formula">V = I · R &nbsp;&nbsp; I = V / R &nbsp;&nbsp; R = V / I</p>
+            <p>El triángulo es el truco para no olvidarla: <b>tapa con el dedo</b> la magnitud que
+            buscas y lo que queda a la vista es la operación.</p>`,
+        },
+        {
+          tipo: 'info',
+          emoji: '🎛️',
+          titulo: 'Pruébala tú',
+          visual: () => laboratorioOhm({ v0: 9, r0: 100 }),
+          cuerpo: `<p>Mueve los deslizadores. Fíjate en dos cosas: la <b>velocidad</b> de los puntos
+            (que es la corriente) y el <b>brillo</b> de la ampolleta (que es la potencia, P = V·I).</p>
+            <p class="dato">Sube R con V fijo y la corriente cae. Sube V con R fija y la corriente sube
+            proporcionalmente. Esa es toda la ley de Ohm.</p>`,
+          textoBoton: 'Listo, ya jugué',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Una resistencia de <b>220 Ω</b> conectada a <b>12 V</b>. ¿Qué corriente circula?',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '12 V' },
+            ramas: [{ nombre: 'R', valor: '220 Ω', destacado: true }],
+            corriente: { etiqueta: 'I', velocidad: 1 },
+          },
+          opciones: ['54.5 mA', '2640 A', '18.3 A', '5.45 A'],
+          correcta: 0,
+          explicacion: `<p>I = V/R = 12 / 220 = <b>0.0545 A = 54.5 mA</b>. La opción de 2640 sale de
+            multiplicar en vez de dividir.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Por una resistencia circulan <b>0.25 A</b> cuando tiene <b>5 V</b> encima. ¿Cuánto vale R?',
+          unidad: 'Ω',
+          respuesta: 20,
+          pista: '<p>Tapa la R en el triángulo: queda V arriba de I.</p>',
+          solucion: '<p>R = V/I = 5 / 0.25 = <b>20 Ω</b>.</p>',
+        },
+        {
+          tipo: 'entrada',
+          enunciado: '¿Qué voltaje hay sobre una resistencia de <b>1.5 kΩ</b> por la que pasan <b>8 mA</b>?',
+          unidad: 'V',
+          respuesta: 12,
+          pista: '<p>Pasa todo a unidades base: 1.5 kΩ = 1500 Ω y 8 mA = 0.008 A.</p>',
+          solucion: '<p>V = I·R = 0.008 × 1500 = <b>12 V</b>. Atajo útil: mA × kΩ = V directamente.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Mantienes <b>V fijo</b> y <b>triplicas R</b>. ¿Qué pasa con la corriente?',
+          opciones: [
+            'Cae a un tercio',
+            'Se triplica',
+            'Queda igual',
+            'Cae a un noveno',
+          ],
+          correcta: 0,
+          explicacion: `<p>I = V/R con V constante: R e I son <b>inversamente proporcionales</b>.
+            Triple de R, un tercio de corriente.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'Completa el valor que falta para que el circuito entregue exactamente <b>100 mA</b>.',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '15 V' },
+            ramas: [{ nombre: 'R', hueco: { id: 'r', unidad: 'Ω', etiqueta: 'R' } }],
+            corriente: { etiqueta: 'I = 100 mA', velocidad: 1.4 },
+          },
+          huecos: [{ id: 'r', respuesta: 150, unidad: 'Ω', etiqueta: 'R' }],
+          pista: '<p>R = V/I, con I en amperes: 100 mA = 0.1 A.</p>',
+          solucion: '<p>R = 15 / 0.1 = <b>150 Ω</b>.</p>',
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Una resistencia de <b>4.7 kΩ</b> conectada a <b>9 V</b>. ¿Qué corriente circula, en mA?',
+          unidad: 'mA',
+          respuesta: 1.915,
+          tolerancia: 0.02,
+          pista: '<p>Atajo cómodo: <b>V ÷ kΩ = mA</b> directamente, sin convertir nada.</p>',
+          solucion: '<p>I = 9 / 4.7 = <b>1.91 mA</b> (o 9 / 4700 = 0.00191 A, lo mismo).</p>',
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Cuáles de estas expresiones son formas <b>válidas</b> de la ley de Ohm?',
+          opciones: ['V = I · R', 'I = V / R', 'R = V / I', 'I = R / V', 'V = R / I'],
+          correctas: [0, 1, 2],
+          explicacion: `<p>Las tres primeras son la misma ecuación despejada. Las dos últimas
+            invierten la división: dan unidades que no existen y números absurdos.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'Esta resistencia tiene <b>4.5 V</b> encima. Completa la fuente y la resistencia.',
+          circuito: {
+            tipo: 'serie',
+            fuente: { hueco: { id: 'v', unidad: 'V', etiqueta: 'Fuente' } },
+            ramas: [{ nombre: 'R', hueco: { id: 'r', unidad: 'Ω', etiqueta: 'R' } }],
+            corriente: { etiqueta: 'I = 30 mA', velocidad: 1.2 },
+          },
+          huecos: [
+            { id: 'v', respuesta: 4.5, unidad: 'V', etiqueta: 'Fuente' },
+            { id: 'r', respuesta: 150, unidad: 'Ω', etiqueta: 'R' },
+          ],
+          pista: `<p>Si R es lo único en el lazo, todo el voltaje de la fuente cae sobre ella.
+            Después, R = V/I.</p>`,
+          solucion: `<p>La fuente entrega los mismos <b>4.5 V</b>, porque no hay nada más donde caer.<br>
+            R = 4.5 / 0.03 = <b>150 Ω</b>.</p>`,
+        },
+      ],
+    },
+
+    // ── 1.5 ──────────────────────────────────────────────────────────────
+    {
+      id: 'f-potencia',
+      titulo: 'La potencia',
+      xp: 30,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🔥',
+          titulo: 'Potencia: energía por segundo',
+          visual: () => laboratorioOhm({ v0: 12, r0: 220 }),
+          cuerpo: `
+            <p>La <b>potencia</b> es el ritmo al que se entrega o se consume energía. Se mide en
+            <b>watt (W)</b>: 1 W = 1 joule por segundo.</p>
+            <p class="formula">P = V · I</p>
+            <p>Y como V = I·R, hay dos formas más que salen solas y ahorran un paso:</p>
+            <p class="formula">P = I²·R &nbsp;&nbsp; P = V²/R</p>
+            <p class="dato">Esto es lo que decide si una resistencia aguanta o se quema. Una de
+            1/4 W no puede disipar 2 W, por muy correcto que esté el cálculo de corriente.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Por una resistencia pasan <b>0.5 A</b> con <b>12 V</b> encima. ¿Qué potencia disipa?',
+          unidad: 'W',
+          respuesta: 6,
+          pista: '<p>Tienes V e I directamente: P = V·I.</p>',
+          solucion: '<p>P = 12 × 0.5 = <b>6 W</b>. Esa energía se va en calor.</p>',
+        },
+        {
+          tipo: 'entrada',
+          enunciado: '¿Cuánta potencia disipa una resistencia de <b>100 Ω</b> con <b>200 mA</b>?',
+          unidad: 'W',
+          respuesta: 4,
+          pista: '<p>Tienes I y R, así que la forma cómoda es P = I²·R. Pasa los mA a A primero.</p>',
+          solucion: '<p>P = 0.2² × 100 = 0.04 × 100 = <b>4 W</b>. Ojo: la corriente va <b>al cuadrado</b>.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Si <b>duplicas la corriente</b> por una resistencia, su potencia disipada…',
+          opciones: [
+            'Se multiplica por 4',
+            'Se duplica',
+            'Queda igual',
+            'Se reduce a la mitad',
+          ],
+          correcta: 0,
+          explicacion: `<p>En P = I²·R la corriente está <b>al cuadrado</b>: al doble de I,
+            cuatro veces la potencia. Por eso las sobrecorrientes queman componentes tan rápido.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: `Una ampolleta dice <b>60 W</b> a <b>220 V</b>. ¿Qué corriente consume?`,
+          opciones: ['273 mA', '13.2 A', '3.67 A', '60 mA'],
+          correcta: 0,
+          explicacion: `<p>I = P/V = 60 / 220 = <b>0.273 A = 273 mA</b>. La opción de 13.2 A sale
+            de multiplicar en vez de dividir.</p>`,
+        },
+        {
+          tipo: 'multiple',
+          pregunta: 'Tienes una resistencia de <b>1 kΩ</b> y <b>1/4 W</b>. ¿En qué casos <b>aguanta</b>?',
+          opciones: [
+            'Conectada a 5 V',
+            'Conectada a 12 V',
+            'Conectada a 24 V',
+            'Con 10 mA circulando',
+            'Con 30 mA circulando',
+          ],
+          correctas: [0, 1, 3],
+          explicacion: `<p>El límite es 0.25 W. Con P = V²/R: a 5 V son 25 mW ✓, a 12 V son 144 mW ✓,
+            pero a 24 V son <b>576 mW</b> ✗. Con P = I²·R: 10 mA dan 100 mW ✓ y 30 mA dan
+            <b>900 mW</b> ✗. En la práctica se deja margen y no se trabaja al límite.</p>`,
+        },
+        {
+          tipo: 'emparejar',
+          enunciado: 'Une cada fórmula con lo que necesitas conocer para usarla',
+          pares: [
+            { a: 'P = V · I', b: 'voltaje y corriente' },
+            { a: 'P = I² · R', b: 'corriente y resistencia' },
+            { a: 'P = V² / R', b: 'voltaje y resistencia' },
+            { a: 'I = V / R', b: 'voltaje y resistencia (da corriente)' },
+          ],
+          explicacion: `<p>Elegir la forma que calza con los datos que ya tienes ahorra un paso
+            y evita arrastrar errores de redondeo.</p>`,
+        },
+      ],
+    },
+  ],
+};
+
+
+/* ── lecciones/02-serie-paralelo.js ── */
+// 02-serie-paralelo.js — como se combinan las resistencias y como se reparten
+// voltaje y corriente en cada topologia.
+
+
+
+const __def__02_serie_paralelo = {
+  id: 'topologias',
+  titulo: 'Serie y paralelo',
+  subtitulo: 'Combinar resistencias',
+  icono: '🔀',
+  color: 'azul',
+  lecciones: [
+
+    // ── 2.1 ──────────────────────────────────────────────────────────────
+    {
+      id: 't-serie',
+      titulo: 'En serie',
+      xp: 25,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '➡️',
+          titulo: 'Un solo camino',
+          visual: () => serieVsParalelo(),
+          cuerpo: `
+            <p>Dos elementos están <b>en serie</b> cuando comparten un nodo por el que no se va
+            nadie más: toda la carga que sale de uno entra al otro.</p>
+            <p class="formula">I es la misma en todos &nbsp;·&nbsp; R<sub>eq</sub> = R₁ + R₂ + R₃ + …</p>
+            <p>El voltaje de la fuente <b>se reparte</b> entre ellas, y a la que tiene más
+            resistencia le toca más voltaje.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: '¿Qué magnitud es <b>igual</b> en todas las resistencias de una conexión serie?',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '12 V' },
+            ramas: [{ nombre: 'R₁', valor: '100 Ω' }, { nombre: 'R₂', valor: '200 Ω' }],
+            corriente: { etiqueta: 'I' },
+          },
+          opciones: [
+            'La corriente',
+            'El voltaje sobre cada una',
+            'La potencia disipada',
+            'Ninguna: todo cambia de una a otra',
+          ],
+          correcta: 0,
+          explicacion: `<p>Hay <b>un solo camino</b>, así que la misma corriente atraviesa todo.
+            El voltaje y la potencia, en cambio, se reparten según cada R.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Tres resistencias en serie: <b>330 Ω</b>, <b>470 Ω</b> y <b>1 kΩ</b>. ¿Cuál es la R equivalente?',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '9 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '330 Ω' },
+              { nombre: 'R₂', valor: '470 Ω' },
+              { nombre: 'R₃', valor: '1 kΩ' },
+            ],
+            corriente: { velocidad: 0.7 },
+          },
+          unidad: 'Ω',
+          respuesta: 1800,
+          pista: '<p>En serie simplemente se suman. Cuidado con el kilo: 1 kΩ = 1000 Ω.</p>',
+          solucion: '<p>330 + 470 + 1000 = <b>1800 Ω = 1.8 kΩ</b>.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'En serie, la resistencia equivalente siempre es…',
+          opciones: [
+            'Mayor que la más grande de todas',
+            'Menor que la más chica de todas',
+            'El promedio de todas',
+            'Igual a la más grande',
+          ],
+          correcta: 0,
+          explicacion: `<p>Sumar solo puede aumentar. Agregar una resistencia en serie siempre
+            <b>estorba más</b> el paso de corriente.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'Por este circuito circulan <b>10 mA</b>. Completa el voltaje de la fuente.',
+          circuito: {
+            tipo: 'serie',
+            fuente: { hueco: { id: 'v', unidad: 'V', etiqueta: 'Fuente' } },
+            ramas: [{ nombre: 'R₁', valor: '330 Ω' }, { nombre: 'R₂', valor: '470 Ω' }],
+            corriente: { etiqueta: 'I = 10 mA', velocidad: 1 },
+          },
+          huecos: [{ id: 'v', respuesta: 8, unidad: 'V', etiqueta: 'Fuente' }],
+          pista: '<p>Primero suma las resistencias, después aplica V = I · R<sub>eq</sub>.</p>',
+          solucion: '<p>R<sub>eq</sub> = 330 + 470 = 800 Ω. V = 0.01 × 800 = <b>8 V</b>.</p>',
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'La corriente medida es <b>20 mA</b>. ¿Qué valor debe tener R₂?',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '10 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '150 Ω' },
+              { nombre: 'R₂', hueco: { id: 'r2', unidad: 'Ω', etiqueta: 'R₂' }, destacado: true },
+            ],
+            corriente: { etiqueta: 'I = 20 mA', velocidad: 1.2 },
+          },
+          huecos: [{ id: 'r2', respuesta: 350, unidad: 'Ω', etiqueta: 'R₂' }],
+          pista: '<p>Saca la R<sub>eq</sub> total con la ley de Ohm y réstale R₁.</p>',
+          solucion: `<p>R<sub>eq</sub> = 10 / 0.02 = 500 Ω. Como están en serie,
+            R₂ = 500 − 150 = <b>350 Ω</b>.</p>`,
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la resistencia por la que cae <b>más voltaje</b>.',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '12 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '220 Ω', id: 'r1' },
+              { nombre: 'R₂', valor: '680 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '100 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 0.7 },
+          },
+          correcta: 'r2',
+          nombreCorrecto: 'R₂ (680 Ω)',
+          explicacion: `<p>Misma corriente por las tres, así que V = I·R crece con R. La más grande
+            se lleva la mayor caída: 680 Ω de 1000 Ω totales, o sea el <b>68 % de los 12 V</b>.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `Tres resistencias en serie suman <b>2.2 kΩ</b>. Si dos valen <b>470 Ω</b> y
+            <b>1 kΩ</b>, ¿cuánto vale la tercera?`,
+          unidad: 'Ω',
+          respuesta: 730,
+          pista: '<p>En serie se suman, así que la que falta es el total menos las conocidas.</p>',
+          solucion: '<p>2200 − 470 − 1000 = <b>730 Ω</b>.</p>',
+        },
+      ],
+    },
+
+    // ── 2.2 ──────────────────────────────────────────────────────────────
+    {
+      id: 't-paralelo',
+      titulo: 'En paralelo',
+      xp: 25,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🔱',
+          titulo: 'Varios caminos, mismo voltaje',
+          circuito: {
+            tipo: 'paralelo',
+            fuente: { etiqueta: '12 V' },
+            ramas: [{ nombre: 'R₁', valor: '100 Ω' }, { nombre: 'R₂', valor: '100 Ω' }],
+            corriente: { velocidad: 1.6 },
+          },
+          cuerpo: `
+            <p>Dos elementos están <b>en paralelo</b> cuando sus dos extremos comparten los mismos
+            nodos. Al estar entre los mismos puntos, tienen <b>el mismo voltaje</b>.</p>
+            <p class="formula">1/R<sub>eq</sub> = 1/R₁ + 1/R₂ + …</p>
+            <p>Para solo dos resistencias existe el atajo del <b>producto sobre la suma</b>:</p>
+            <p class="formula">R<sub>eq</sub> = R₁·R₂ / (R₁ + R₂)</p>
+            <p class="dato">Agregar una rama en paralelo es abrir otro camino: la corriente total
+            <b>sube</b> y la resistencia equivalente <b>baja</b>.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: '¿Qué magnitud es <b>igual</b> en dos resistencias conectadas en paralelo?',
+          opciones: [
+            'El voltaje sobre cada una',
+            'La corriente por cada una',
+            'La potencia de cada una',
+            'La resistencia de cada una',
+          ],
+          correcta: 0,
+          explicacion: `<p>Comparten ambos nodos, y el voltaje es una diferencia <b>entre nodos</b>:
+            si los nodos son los mismos, la diferencia también.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Dos resistencias de <b>100 Ω</b> en paralelo. ¿Cuál es la R equivalente?',
+          circuito: {
+            tipo: 'paralelo',
+            fuente: { etiqueta: '10 V' },
+            ramas: [{ nombre: 'R₁', valor: '100 Ω' }, { nombre: 'R₂', valor: '100 Ω' }],
+            corriente: { velocidad: 1.6 },
+          },
+          unidad: 'Ω',
+          respuesta: 50,
+          pista: '<p>Con <i>n</i> resistencias <b>iguales</b> en paralelo: R<sub>eq</sub> = R/n.</p>',
+          solucion: '<p>100·100 / (100+100) = 10000/200 = <b>50 Ω</b>. La mitad, como manda la regla R/n.</p>',
+        },
+        {
+          tipo: 'entrada',
+          enunciado: '<b>300 Ω</b> en paralelo con <b>600 Ω</b>. ¿R equivalente?',
+          unidad: 'Ω',
+          respuesta: 200,
+          pista: '<p>Producto sobre suma: (300 × 600) / (300 + 600).</p>',
+          solucion: '<p>180000 / 900 = <b>200 Ω</b>. Menor que 300, que es la más chica: siempre pasa.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'En paralelo, la resistencia equivalente siempre es…',
+          opciones: [
+            'Menor que la más chica de todas',
+            'Mayor que la más grande de todas',
+            'El promedio de todas',
+            'La suma de todas',
+          ],
+          correcta: 0,
+          explicacion: `<p>Cada rama nueva es un camino extra, así que en conjunto <b>estorban menos</b>
+            que cualquiera por separado. Si te da un valor mayor que la más chica, revisa: te equivocaste.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Una rama en paralelo se <b>corta</b> (queda abierta). ¿Qué pasa con la otra rama?',
+          circuito: {
+            tipo: 'paralelo',
+            fuente: { etiqueta: '12 V' },
+            ramas: [{ nombre: 'R₁', valor: '100 Ω' }, { nombre: 'R₂', valor: '100 Ω' }],
+            corriente: { velocidad: 1.4 },
+          },
+          opciones: [
+            'Sigue con el mismo voltaje y la misma corriente que antes',
+            'Se apaga también',
+            'Le llega el doble de voltaje',
+            'Su corriente cae a la mitad',
+          ],
+          correcta: 0,
+          explicacion: `<p>Cada rama ve directamente el voltaje de la fuente, así que su corriente
+            no depende de las otras. Por eso las ampolletas de una casa se conectan en <b>paralelo</b>:
+            si una se quema, el resto sigue funcionando.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'Por R₂ circulan <b>30 mA</b>. Completa su valor.',
+          circuito: {
+            tipo: 'paralelo',
+            fuente: { etiqueta: '24 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '1.2 kΩ' },
+              { nombre: 'R₂', hueco: { id: 'r2', unidad: 'Ω', etiqueta: 'R₂' }, destacado: true },
+            ],
+            corriente: { velocidad: 1.5 },
+          },
+          huecos: [{ id: 'r2', respuesta: 800, unidad: 'Ω', etiqueta: 'R₂' }],
+          pista: '<p>R₂ está directamente sobre la fuente: tiene los 24 V completos encima.</p>',
+          solucion: `<p>R₂ = 24 / 0.03 = <b>800 Ω</b>. Fíjate que R₁ no entra en el cálculo para nada:
+            en paralelo cada rama es independiente.</p>`,
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la rama por la que circula <b>más corriente</b>.',
+          circuito: {
+            tipo: 'paralelo',
+            fuente: { etiqueta: '12 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '1 kΩ', id: 'r1' },
+              { nombre: 'R₂', valor: '220 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '470 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 1.6 },
+          },
+          correcta: 'r2',
+          nombreCorrecto: 'R₂ (220 Ω)',
+          explicacion: `<p>Las tres ven los mismos 12 V, así que I = V/R es mayor en la <b>resistencia
+            más chica</b>: 12/220 = 54.5 mA, contra 25.5 mA en R₃ y apenas 12 mA en R₁.</p>
+            <p>Es justo al revés que en serie, y por eso conviene fijarse siempre primero en cómo
+            están conectadas.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Tres resistencias de <b>600 Ω</b> en paralelo. ¿R equivalente?',
+          unidad: 'Ω',
+          respuesta: 200,
+          pista: '<p>Con <i>n</i> iguales en paralelo: R<sub>eq</sub> = R/n.</p>',
+          solucion: '<p>600/3 = <b>200 Ω</b>.</p>',
+        },
+        {
+          tipo: 'multiple',
+          pregunta: 'Marca todo lo que es <b>cierto</b> de dos resistencias en paralelo.',
+          opciones: [
+            'Tienen el mismo voltaje',
+            'La equivalente es menor que cualquiera de las dos',
+            'Si una se abre, la otra sigue funcionando',
+            'La corriente total es la suma de las dos ramas',
+            'Tienen la misma corriente',
+            'Las resistencias se suman',
+          ],
+          correctas: [0, 1, 2, 3],
+          explicacion: `<p>Las dos últimas son propiedades de la <b>serie</b>, no del paralelo.
+            Confundirlas es el error más frecuente del tema: en paralelo se comparte el voltaje
+            y se reparte la corriente.</p>`,
+        },
+      ],
+    },
+
+    // ── 2.3 ──────────────────────────────────────────────────────────────
+    {
+      id: 't-divisor',
+      titulo: 'Divisor de voltaje',
+      xp: 25,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '⚖️',
+          titulo: 'El voltaje se reparte en proporción',
+          visual: () => barrasDivisor(12, 100, 200),
+          cuerpo: `
+            <p>En una serie, la misma corriente pasa por todas. Como V = I·R, a cada resistencia le
+            toca voltaje <b>en proporción directa a su valor</b>.</p>
+            <p class="formula">V₁ = V · R₁ / (R₁ + R₂)</p>
+            <p>En el ejemplo, R₂ es el doble de R₁, así que se queda con el doble de voltaje:
+            4 V y 8 V, que suman los 12 V de la fuente.</p>
+            <p class="dato">Este es probablemente el circuito más usado de toda la electrónica:
+            sensores, referencias, ajustes de ganancia. Vale la pena que te salga de memoria.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'En un divisor con R₁ = 1 kΩ y R₂ = 3 kΩ, ¿cuál se lleva más voltaje?',
+          opciones: [
+            'R₂, porque tiene mayor resistencia',
+            'R₁, porque va primero',
+            'Las dos exactamente lo mismo',
+            'Depende de la corriente que circule',
+          ],
+          correcta: 0,
+          explicacion: `<p>Misma corriente en ambas, así que gana la de mayor R. R₂ se lleva
+            3/4 del total y R₁ solo 1/4.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Divisor con <b>V = 10 V</b>, <b>R₁ = 2 kΩ</b> y <b>R₂ = 3 kΩ</b>. ¿Cuánto vale V₂ (sobre R₂)?',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '10 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '2 kΩ' },
+              { nombre: 'R₂', valor: '3 kΩ', destacado: true },
+            ],
+            corriente: { velocidad: 0.8 },
+          },
+          unidad: 'V',
+          respuesta: 6,
+          pista: '<p>V₂ = V · R₂/(R₁+R₂). La fracción es la parte de la resistencia total que aporta R₂.</p>',
+          solucion: '<p>V₂ = 10 × 3000/5000 = 10 × 0.6 = <b>6 V</b>. Y sobre R₁ quedan los otros 4 V.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Quieres sacar <b>la mitad</b> del voltaje de entrada. ¿Cómo eliges las resistencias?',
+          opciones: [
+            'R₁ = R₂, con cualquier valor',
+            'R₂ debe ser el doble de R₁',
+            'R₁ debe ser el doble de R₂',
+            'R₂ tiene que valer exactamente 1 kΩ',
+          ],
+          correcta: 0,
+          explicacion: `<p>Si son iguales, cada una se lleva la mitad. El valor absoluto solo
+            define cuánta corriente consume el divisor, no la razón de división.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'Necesitas que sobre R₂ queden exactamente <b>3 V</b>. Completa R₂.',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '12 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '3 kΩ' },
+              { nombre: 'R₂', hueco: { id: 'r2', unidad: 'Ω', etiqueta: 'R₂' }, destacado: true },
+            ],
+            corriente: { velocidad: 0.8 },
+          },
+          huecos: [{ id: 'r2', respuesta: 1000, unidad: 'Ω', etiqueta: 'R₂' }],
+          pista: `<p>Si R₂ se queda con 3 de 12 V, a R₁ le tocan 9 V. Las resistencias están en la
+            misma proporción que los voltajes.</p>`,
+          solucion: `<p>R₂/R₁ = V₂/V₁ = 3/9 = 1/3, así que R₂ = 3000/3 = <b>1000 Ω = 1 kΩ</b>.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `Divisor con <b>V = 20 V</b>, <b>R₁ = 1.5 kΩ</b> y <b>R₂ = 500 Ω</b>.
+            ¿Cuánto cae sobre <b>R₁</b>?`,
+          unidad: 'V',
+          respuesta: 15,
+          pista: '<p>V₁ = V · R₁/(R₁+R₂). El total es 2 kΩ.</p>',
+          solucion: '<p>V₁ = 20 × 1500/2000 = 20 × 0.75 = <b>15 V</b>. Y a R₂ le quedan 5 V.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: `Cambias las dos resistencias del divisor por otras <b>diez veces más grandes</b>,
+            manteniendo la proporción. ¿Qué pasa con el voltaje de salida?`,
+          opciones: [
+            'No cambia; lo que baja es la corriente que consume el divisor',
+            'Se hace diez veces más grande',
+            'Se hace diez veces más chico',
+            'Se va a cero',
+          ],
+          correcta: 0,
+          explicacion: `<p>La razón R₂/(R₁+R₂) es la misma, así que la salida no se mueve. Lo que sí
+            cae diez veces es la corriente, y con ella el consumo. Por eso los divisores de referencia
+            se hacen con valores altos.</p>`,
+        },
+      ],
+    },
+
+    // ── 2.4 ──────────────────────────────────────────────────────────────
+    {
+      id: 't-mixtos',
+      titulo: 'Circuitos mixtos',
+      xp: 35,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🧩',
+          titulo: 'Resolver de adentro hacia afuera',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '12 V' },
+            serie: [{ nombre: 'R₁', valor: '100 Ω' }],
+            paralelo: [{ nombre: 'R₂', valor: '200 Ω' }, { nombre: 'R₃', valor: '200 Ω' }],
+            corriente: { velocidad: 1.2 },
+          },
+          cuerpo: `
+            <p>Ningún circuito real es puro serie o puro paralelo. La estrategia siempre es la misma:
+            <b>colapsar los bloques más internos primero</b>.</p>
+            <ol>
+              <li>R₂ ∥ R₃ = 200·200/400 = <b>100 Ω</b></li>
+              <li>Eso queda en serie con R₁: R<sub>eq</sub> = 100 + 100 = <b>200 Ω</b></li>
+              <li>Corriente total: I = 12/200 = <b>60 mA</b></li>
+              <li>Sobre R₁ caen 0.06 × 100 = 6 V, y los otros <b>6 V</b> quedan sobre el paralelo</li>
+            </ol>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Mismo circuito. ¿Cuánta corriente pasa por <b>R₂</b>?',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '12 V' },
+            serie: [{ nombre: 'R₁', valor: '100 Ω' }],
+            paralelo: [
+              { nombre: 'R₂', valor: '200 Ω', destacado: true },
+              { nombre: 'R₃', valor: '200 Ω' },
+            ],
+            corriente: { velocidad: 1.2 },
+          },
+          unidad: 'A',
+          respuesta: 0.03,
+          pista: '<p>Ya sabes que sobre el paralelo quedan 6 V, y R₂ los ve completos.</p>',
+          solucion: `<p>I₂ = 6/200 = <b>30 mA</b>. Como R₂ = R₃, los 60 mA totales se parten
+            en dos mitades iguales.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'En el circuito mixto, si <b>cortas R₃</b>, ¿qué pasa con la corriente total?',
+          opciones: [
+            'Baja, porque sube la resistencia equivalente',
+            'Sube, porque hay menos resistencias',
+            'Queda igual, R₃ estaba en paralelo',
+            'Se hace cero: el circuito queda abierto',
+          ],
+          correcta: 0,
+          explicacion: `<p>Sin R₃, el bloque paralelo deja de existir y queda solo R₂ = 200 Ω.
+            La R<sub>eq</sub> pasa de 200 a 300 Ω, así que la corriente cae de 60 mA a 40 mA.
+            El circuito <b>no</b> se abre: R₂ sigue dando camino.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'La corriente total medida es <b>60 mA</b>. Completa el valor de R₂.',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '12 V' },
+            serie: [{ nombre: 'R₁', valor: '100 Ω' }],
+            paralelo: [
+              { nombre: 'R₂', hueco: { id: 'r2', unidad: 'Ω', etiqueta: 'R₂' }, destacado: true },
+              { nombre: 'R₃', valor: '300 Ω' },
+            ],
+            corriente: { etiqueta: 'I = 60 mA', velocidad: 1.2 },
+          },
+          huecos: [{ id: 'r2', respuesta: 150, unidad: 'Ω', etiqueta: 'R₂' }],
+          pista: `<p>Con I y V sacas la R<sub>eq</sub> total; réstale R₁ para tener el paralelo,
+            y después despeja de 1/R<sub>p</sub> = 1/R₂ + 1/R₃.</p>`,
+          solucion: `<p>R<sub>eq</sub> = 12/0.06 = 200 Ω, así que el paralelo vale 200 − 100 = 100 Ω.<br>
+            1/R₂ = 1/100 − 1/300 = 2/300, entonces R₂ = <b>150 Ω</b>.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'Completa <b>los dos</b> valores para que circulen <b>50 mA</b> y sobre R₁ caigan <b>5 V</b>.',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { hueco: { id: 'v', unidad: 'V', etiqueta: 'Fuente' } },
+            serie: [{ nombre: 'R₁', hueco: { id: 'r1', unidad: 'Ω', etiqueta: 'R₁' } }],
+            paralelo: [{ nombre: 'R₂', valor: '400 Ω' }, { nombre: 'R₃', valor: '400 Ω' }],
+            corriente: { etiqueta: 'I = 50 mA', velocidad: 1.3 },
+          },
+          huecos: [
+            { id: 'v', respuesta: 15, unidad: 'V', etiqueta: 'Fuente' },
+            { id: 'r1', respuesta: 100, unidad: 'Ω', etiqueta: 'R₁' },
+          ],
+          pista: `<p>R₁ es directo con la ley de Ohm. Para la fuente, calcula además cuánto cae
+            sobre el paralelo y suma las dos caídas.</p>`,
+          solucion: `<p>R₁ = 5 / 0.05 = <b>100 Ω</b>.<br>
+            El paralelo vale 400∥400 = 200 Ω, y ahí caen 0.05 × 200 = 10 V.<br>
+            La fuente debe entregar 5 + 10 = <b>15 V</b>.</p>`,
+        },
+        {
+          tipo: 'ordenar',
+          enunciado: 'Ordena los pasos para resolver un circuito mixto.',
+          pasos: [
+            'Identificar qué bloques están en paralelo',
+            'Colapsar cada paralelo en una resistencia equivalente',
+            'Sumar lo que quedó en serie para tener R<sub>eq</sub> total',
+            'Calcular la corriente total con I = V / R<sub>eq</sub>',
+            'Repartir voltajes y corrientes hacia adentro',
+          ],
+          explicacion: `<p>La idea es siempre <b>de adentro hacia afuera</b> para simplificar, y
+            después <b>de afuera hacia adentro</b> para repartir. Saltarse el primer paso —mirar
+            bien quién está con quién— es lo que hace fallar el resto.</p>`,
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la resistencia que está <b>en serie con la fuente</b>.',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '18 V' },
+            serie: [{ nombre: 'R₁', valor: '220 Ω', id: 'r1' }],
+            paralelo: [
+              { nombre: 'R₂', valor: '330 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '470 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 1.1 },
+          },
+          correcta: 'r1',
+          nombreCorrecto: 'R₁',
+          explicacion: `<p>Por R₁ pasa <b>toda</b> la corriente antes de que se reparta: ese es el
+            sello de estar en serie con la fuente. R₂ y R₃ solo ven su parte.</p>`,
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la resistencia que está <b>en paralelo con R₂</b>.',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '18 V' },
+            serie: [{ nombre: 'R₁', valor: '220 Ω', id: 'r1' }],
+            paralelo: [
+              { nombre: 'R₂', valor: '330 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '470 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 1.1 },
+          },
+          correcta: 'r3',
+          nombreCorrecto: 'R₃',
+          explicacion: `<p>R₂ y R₃ tienen sus dos extremos conectados a los <b>mismos dos nodos</b>,
+            que es la definición de paralelo. R₁ está antes del punto donde el camino se divide.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `En ese mismo circuito (18 V, R₁ = 220 Ω, R₂ = 330 Ω, R₃ = 470 Ω),
+            ¿cuál es la <b>resistencia equivalente total</b>?`,
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '18 V' },
+            serie: [{ nombre: 'R₁', valor: '220 Ω' }],
+            paralelo: [{ nombre: 'R₂', valor: '330 Ω' }, { nombre: 'R₃', valor: '470 Ω' }],
+            corriente: { velocidad: 1.1 },
+          },
+          unidad: 'Ω',
+          respuesta: 413.875,
+          tolerancia: 0.02,
+          pista: '<p>Primero R₂∥R₃ con producto sobre suma, y a eso le sumas R₁.</p>',
+          solucion: `<p>R₂∥R₃ = (330 × 470)/800 = 155100/800 = 193.9 Ω.<br>
+            R<sub>eq</sub> = 220 + 193.9 = <b>413.9 Ω</b>.</p>`,
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Qué es cierto de <b>cualquier</b> circuito mixto como este?',
+          opciones: [
+            'La corriente por la resistencia en serie es la suma de las de las ramas',
+            'El bloque paralelo siempre vale menos que su rama más chica',
+            'La suma de las caídas de voltaje da el voltaje de la fuente',
+            'Todas las resistencias disipan la misma potencia',
+            'El voltaje sobre las dos ramas en paralelo es el mismo',
+          ],
+          correctas: [0, 1, 2, 4],
+          explicacion: `<p>La cuarta es falsa: la potencia depende de la corriente y la resistencia
+            de cada una, y ahí casi nunca coinciden. Las otras cuatro son consecuencias directas de
+            las leyes de Kirchhoff, y te sirven para <b>revisar</b> un resultado: si la suma de
+            caídas no da el voltaje de la fuente, hay un error en alguna parte.</p>`,
+        },
+      ],
+    },
+  ],
+};
+
+
+/* ── lecciones/03-inductores.js ── */
+// 03-inductores.js — esqueleto. El temario ya esta fijado; falta escribir los pasos.
+
+const __def__03_inductores = {
+  id: 'inductores',
+  titulo: 'Inductores',
+  subtitulo: 'La corriente que se resiste a cambiar',
+  icono: '🌀',
+  color: 'violeta',
+  proximamente: true,
+  temario: [
+    'Campo magnetico y flujo: por que una bobina almacena energia',
+    'Ley de Faraday y ley de Lenz: v = L·di/dt',
+    'La corriente en un inductor no puede saltar (continuidad)',
+    'Energia almacenada: W = ½·L·i²',
+    'Inductores en serie y paralelo',
+    'Transitorio RL: constante de tiempo τ = L/R',
+    'Por que abrir un inductor produce un arco',
+  ],
+  lecciones: [],
+};
+
+
+/* ── lecciones/04-capacitores.js ── */
+// 04-capacitores.js — esqueleto. El temario ya esta fijado; falta escribir los pasos.
+
+const __def__04_capacitores = {
+  id: 'capacitores',
+  titulo: 'Capacitores',
+  subtitulo: 'El voltaje que se resiste a cambiar',
+  icono: '🔌',
+  color: 'verde',
+  proximamente: true,
+  temario: [
+    'Dos placas y un campo electrico: que guarda realmente un capacitor',
+    'Capacitancia: C = Q/V y la relacion i = C·dv/dt',
+    'El voltaje en un capacitor no puede saltar (continuidad)',
+    'Energia almacenada: W = ½·C·v²',
+    'Capacitores en serie y paralelo (al reves que las resistencias)',
+    'Transitorio RC: carga, descarga y τ = R·C',
+    'La regla del 63 % y los cinco tau',
+    'Capacitor en DC y en AC: reactancia Xc = 1/(ωC)',
+  ],
+  lecciones: [],
+};
+
+
+/* ── lecciones/05-laplace.js ── */
+// 05-laplace.js — esqueleto. El temario ya esta fijado; falta escribir los pasos.
+
+const __def__05_laplace = {
+  id: 'laplace',
+  titulo: 'Transformada de Laplace',
+  subtitulo: 'Del tiempo al dominio s',
+  icono: '📐',
+  color: 'rojo',
+  proximamente: true,
+  temario: [
+    'Por que transformar: derivadas e integrales se vuelven algebra',
+    'Definicion y transformadas basicas (escalon, exponencial, seno)',
+    'Propiedades: linealidad, derivada, integral, desplazamiento',
+    'Condiciones iniciales incorporadas en la transformada',
+    'Impedancias en el dominio s: R, sL, 1/(sC)',
+    'Resolver un RLC completo sin ecuaciones diferenciales',
+    'Funcion de transferencia H(s), polos y ceros',
+    'Antitransformada por fracciones parciales',
+    'Teoremas del valor inicial y del valor final',
+  ],
+  lecciones: [],
+};
+
+
+/* ── js/app.js ── */
+// app.js — mapa de aprendizaje, navegacion y pegado de todas las piezas.
+
+
+
+
+
+const fundamentos = __def__01_fundamentos;
+const topologias = __def__02_serie_paralelo;
+const inductores = __def__03_inductores;
+const capacitores = __def__04_capacitores;
+const laplace = __def__05_laplace;
+
+const MODULOS = [fundamentos, topologias, inductores, capacitores, laplace];
+
+const app = document.getElementById('app');
+
+// ── Descarga de archivos ────────────────────────────────────────────────────
+//
+// Publicada como Artifact, la pagina corre en un visor donde los enlaces con
+// `download` quedan inertes y hay que pedirle el guardado al anfitrion. Fuera
+// de ahi no existe ese anfitrion y toca el blob de toda la vida. Se resuelve
+// una sola vez al arrancar para no hacer esperar al usuario en pleno clic.
+
+let guardadorAnfitrion = null;
+if (typeof window !== 'undefined' && typeof window.claude?.use === 'function') {
+  Promise.resolve(window.claude.use('downloads'))
+    .then((d) => { guardadorAnfitrion = d; })
+    .catch(() => { guardadorAnfitrion = null; });
+}
+
+async function descargar(nombre, contenido, tipo = 'application/json') {
+  if (guardadorAnfitrion) {
+    try {
+      await guardadorAnfitrion.save({ filename: nombre, data: contenido });
+      return true;
+    } catch {
+      return false;                 // el visor puede rechazarlo; no es un fallo
+    }
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return true;
+  } catch { return false; }
+}
+
+async function alPortapapeles(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+    return true;
+  } catch { return false; }
+}
+
+// ── Reglas de desbloqueo ────────────────────────────────────────────────────
+// Dentro de un modulo se avanza en orden. Un modulo se abre cuando el anterior
+// tiene al menos una leccion hecha: castiga poco y mantiene el orden sugerido.
+
+let modoLibre = false;   // valvula de escape para revisar contenido sin jugar
+
+function moduloAbierto(idx) {
+  if (modoLibre || idx === 0) return true;
+  const previo = MODULOS[idx - 1];
+  if (previo.proximamente) return false;
+  return previo.lecciones.some((l) => estaCompletada(l.id));
+}
+
+function leccionAbierta(mod, i) {
+  if (modoLibre || i === 0) return true;
+  return estaCompletada(mod.lecciones[i - 1].id);
+}
+
+function progresoModulo(mod) {
+  if (!mod.lecciones.length) return 0;
+  const hechas = mod.lecciones.filter((l) => estaCompletada(l.id)).length;
+  return hechas / mod.lecciones.length;
+}
+
+// ── Barra superior ──────────────────────────────────────────────────────────
+
+function construirBarra() {
+  const racha = h('span', { class: 'stat' }, [
+    h('i', { class: 'ic' }, ['🔥']), h('b', {}, [String(rachaVigente())]),
+  ]);
+  const xp = h('span', { class: 'stat' }, [
+    h('i', { class: 'ic' }, ['⚡']), h('b', {}, [String(estado.xp)]),
+  ]);
+  const vidas = h('span', { class: 'stat' }, [
+    h('i', { class: 'ic' }, ['♥']), h('b', {}, [String(sincronizarVidas())]),
+  ]);
+
+  return h('header', { class: 'barra-sup' }, [
+    h('div', { class: 'marca' }, [
+      h('span', { class: 'rayo' }, ['⚡']),
+      h('span', { class: 'marca-txt' }, ['Voltio']),
+    ]),
+    h('div', { class: 'stats' }, [racha, xp, vidas]),
+    h('button', { class: 'icono-btn', title: 'Ajustes', 'aria-label': 'Ajustes',
+      onClick: verAjustes }, ['⚙']),
+  ]);
+}
+
+// ── Mapa ────────────────────────────────────────────────────────────────────
+
+function nodoLeccion(mod, lec, i, abierta) {
+  const hecha = estaCompletada(lec.id);
+  const estrellas = estrellasDe(lec.id);
+  const clases = ['nodo', abierta ? (hecha ? 'hecha' : 'activa') : 'cerrada'];
+  // El zigzag del camino: el desfase depende de la posicion en la lista.
+  const desfase = [0, 46, 66, 46, 0, -46, -66, -46][i % 8];
+
+  const btn = h('button', {
+    class: clases.join(' '),
+    style: `--desfase:${desfase}px`,
+    disabled: abierta ? null : 'true',
+    'aria-label': `${lec.titulo}${hecha ? ' (completada)' : abierta ? '' : ' (bloqueada)'}`,
+    onClick: () => abierta && iniciarLeccion(mod, lec),
+  }, [
+    h('span', { class: 'nodo-cara' }, [hecha ? '★' : abierta ? '▶' : '🔒']),
+    h('span', { class: 'nodo-nombre' }, [lec.titulo]),
+    hecha ? h('span', { class: 'nodo-estrellas' },
+      [1, 2, 3].map((n) => h('i', { class: n <= estrellas ? 'on' : '' }, ['★']))) : null,
+  ]);
+  return btn;
+}
+
+function seccionModulo(mod, idx) {
+  const abierto = moduloAbierto(idx);
+  const prog = progresoModulo(mod);
+
+  const cabecera = h('div', { class: `mod-cab ${mod.color}${abierto ? '' : ' cerrado'}` }, [
+    h('div', { class: 'mod-icono' }, [mod.icono]),
+    h('div', { class: 'mod-txt' }, [
+      h('h2', {}, [mod.titulo]),
+      h('p', {}, [mod.subtitulo]),
+    ]),
+    mod.lecciones.length
+      ? h('div', { class: 'mod-prog' }, [
+          h('div', { class: 'mod-barra' }, [h('i', { style: `width:${Math.round(prog * 100)}%` })]),
+          h('span', {}, [`${mod.lecciones.filter((l) => estaCompletada(l.id)).length}/${mod.lecciones.length}`]),
+        ])
+      : h('span', { class: 'chip' }, ['Pronto']),
+  ]);
+
+  const cuerpo = mod.proximamente
+    ? h('details', { class: 'temario' }, [
+        h('summary', {}, ['Ver qué viene en este módulo']),
+        h('ul', {}, mod.temario.map((x) => h('li', {}, [x]))),
+      ])
+    : h('div', { class: 'camino' },
+        mod.lecciones.map((lec, i) => nodoLeccion(mod, lec, i, abierto && leccionAbierta(mod, i))));
+
+  return h('section', { class: 'modulo' }, [cabecera, cuerpo]);
+}
+
+function verMapa() {
+  app.innerHTML = '';
+  app.className = 'pantalla-mapa';
+  app.append(
+    construirBarra(),
+    h('main', { class: 'mapa' }, [
+      hayAlmacenamiento ? null : h('div', { class: 'banda-aviso', role: 'status' }, [
+        h('b', {}, ['Tu progreso no se está guardando. ']),
+        'Este navegador tiene el almacenamiento bloqueado (suele ser una ventana privada). ',
+        'Lo que avances se perderá al cerrar la pestaña.',
+      ]),
+      h('div', { class: 'saludo' }, [
+        h('h1', {}, ['Aprende electricidad']),
+        h('p', {}, ['Una lección corta al día y en un mes entiendes circuitos de verdad.']),
+      ]),
+      ...MODULOS.map(seccionModulo),
+      h('footer', { class: 'pie-mapa' }, ['Voltio · proyecto personal']),
+    ]),
+  );
+  window.scrollTo(0, 0);
+}
+
+// ── Leccion ─────────────────────────────────────────────────────────────────
+
+async function iniciarLeccion(mod, lec) {
+  app.innerHTML = '';
+  app.className = 'pantalla-leccion';
+  const caja = h('div', { class: 'leccion' });
+  app.append(caja);
+
+  const res = await reproducirLeccion(lec, caja, { alSalir: () => {} });
+
+  if (res.completada) {
+    completarLeccion(lec.id, { estrellas: res.estrellas, xp: res.xp });
+  }
+  verMapa();
+}
+
+// ── Ajustes ─────────────────────────────────────────────────────────────────
+
+/**
+ * Respaldo del progreso. Sin cuenta ni servidor, esto es lo unico que lo salva
+ * de un "limpiar datos de navegacion" y la unica via de llevarlo a otro
+ * dispositivo, asi que va explicado, no escondido tras un icono.
+ */
+function construirRespaldo() {
+  const aviso = h('p', { class: 'aviso-guardado' });
+  const campo = h('textarea', {
+    class: 'campo-respaldo', rows: '3', spellcheck: 'false',
+    placeholder: 'Pega aquí tu código de respaldo…',
+    'aria-label': 'Código de respaldo para importar',
+  });
+  const resultado = h('p', { class: 'resultado-respaldo' });
+
+  const decir = (txt, clase = '') => {
+    resultado.textContent = txt;
+    resultado.className = `resultado-respaldo ${clase}`;
+  };
+
+  const fecha = new Date().toISOString().slice(0, 10);
+
+  const tarjeta = h('div', { class: 'tarjeta' }, [
+    h('h3', {}, ['Respaldo del progreso']),
+    aviso,
+    h('p', {}, [
+      'Tu avance se guarda en este navegador. Si limpias los datos de navegación se borra, ',
+      'y no viaja solo a otro dispositivo. Sácale un respaldo de vez en cuando.',
+    ]),
+    h('div', { class: 'fila-botones' }, [
+      h('button', {
+        class: 'btn secundario',
+        onClick: async (ev) => {
+          const ok = await descargar(`voltio-progreso-${fecha}.json`, exportarJSON());
+          decir(ok ? 'Archivo descargado.' : 'El navegador no permitió la descarga. Usa el código.',
+            ok ? 'ok' : 'mal');
+          ev.target.blur();
+        },
+      }, ['Descargar archivo']),
+      h('button', {
+        class: 'btn secundario',
+        onClick: async (ev) => {
+          const codigo = exportarCodigo();
+          const ok = await alPortapapeles(codigo);
+          if (ok) decir('Código copiado. Pégalo en el otro dispositivo.', 'ok');
+          else {
+            // Sin portapapeles queda mostrarlo para copiar a mano.
+            campo.value = codigo;
+            campo.select();
+            decir('No pude copiarlo solo: está en el cuadro, cópialo tú.', '');
+          }
+          ev.target.blur();
+        },
+      }, ['Copiar código']),
+    ]),
+    h('h4', {}, ['Restaurar']),
+    campo,
+    h('div', { class: 'fila-botones' }, [
+      h('button', {
+        class: 'btn secundario',
+        onClick: () => {
+          try {
+            const r = importar(campo.value);
+            decir(`Listo: ${r.lecciones} lecciones y ${r.xp} XP.`, 'ok');
+            campo.value = '';
+            setTimeout(verAjustes, 1200);
+          } catch (e) {
+            decir(e.message, 'mal');
+          }
+        },
+      }, ['Restaurar respaldo']),
+    ]),
+    h('p', { class: 'nota-fina' }, [
+      'Al restaurar se conserva lo mejor de cada lado: si ya tenías una lección con más ',
+      'estrellas, no la pierdes.',
+    ]),
+    resultado,
+  ]);
+
+  if (!hayAlmacenamiento) {
+    aviso.className = 'aviso-guardado mal';
+    aviso.textContent = 'Este navegador no permite guardar: tu progreso se perderá al cerrar '
+      + 'la pestaña. Suele pasar en ventanas privadas o con las cookies bloqueadas.';
+  } else if (!guardadoSano()) {
+    aviso.className = 'aviso-guardado mal';
+    aviso.textContent = 'La última vez que intenté guardar hubo un error. Saca un respaldo ahora.';
+  } else {
+    aviso.remove();
+  }
+  return tarjeta;
+}
+
+function verAjustes() {
+  app.innerHTML = '';
+  app.className = 'pantalla-ajustes';
+  app.append(
+    h('header', { class: 'barra-sup' }, [
+      h('button', { class: 'icono-btn', onClick: verMapa, 'aria-label': 'Volver' }, ['←']),
+      h('div', { class: 'marca' }, [h('span', { class: 'marca-txt' }, ['Ajustes'])]),
+      h('span', {}),
+    ]),
+    h('main', { class: 'ajustes' }, [
+      h('div', { class: 'tarjeta' }, [
+        h('h3', {}, ['Tu progreso']),
+        h('div', { class: 'grid-stats' }, [
+          h('div', {}, [h('b', {}, [String(estado.xp)]), h('span', {}, ['XP total'])]),
+          h('div', {}, [h('b', {}, [String(rachaVigente())]), h('span', {}, ['Días de racha'])]),
+          h('div', {}, [h('b', {}, [String(Object.keys(estado.completadas).length)]), h('span', {}, ['Lecciones'])]),
+        ]),
+      ]),
+      h('div', { class: 'tarjeta' }, [
+        h('h3', {}, ['Vidas']),
+        h('p', {}, [`Tienes ${sincronizarVidas()} de 5. Se recarga una cada 20 minutos.`]),
+        h('button', { class: 'btn secundario', onClick: () => { rellenarVidas(); verAjustes(); } },
+          ['Rellenar vidas']),
+      ]),
+      construirRespaldo(),
+      h('div', { class: 'tarjeta' }, [
+        h('h3', {}, ['Modo libre']),
+        h('p', {}, ['Abre todas las lecciones sin respetar el orden. Útil para repasar o revisar contenido.']),
+        h('button', {
+          class: 'btn secundario',
+          onClick: (ev) => { modoLibre = !modoLibre; ev.target.textContent = modoLibre ? 'Desactivar' : 'Activar'; },
+        }, [modoLibre ? 'Desactivar' : 'Activar']),
+      ]),
+      h('div', { class: 'tarjeta peligro' }, [
+        h('h3', {}, ['Borrar progreso']),
+        h('p', {}, ['Vuelve todo a cero. No se puede deshacer.']),
+        h('button', {
+          class: 'btn peligro',
+          onClick: () => { if (confirm('¿Borrar todo tu progreso?')) { reiniciarTodo(); verMapa(); } },
+        }, ['Borrar todo']),
+      ]),
+    ]),
+  );
+}
+
+// ── Actualizaciones de la app instalada ─────────────────────────────────────
+
+function mostrarActualizacion(aplicar) {
+  if (document.querySelector('.banda-version')) return;
+  const banda = h('div', { class: 'banda-version', role: 'status' }, [
+    h('span', {}, ['Hay una versión nueva de Voltio.']),
+    h('button', {
+      class: 'btn secundario chico',
+      onClick: (ev) => { ev.target.textContent = 'Actualizando…'; ev.target.disabled = true; aplicar(); },
+    }, ['Actualizar']),
+  ]);
+  document.body.appendChild(banda);
+}
+
+window.addEventListener('voltio:actualizacion', (ev) => {
+  mostrarActualizacion(ev.detail.aplicar);
+});
+
+// ── Arranque ────────────────────────────────────────────────────────────────
+
+suscribir(() => {
+  // Si el usuario esta mirando el mapa, refresca los contadores al vuelo.
+  if (app.className === 'pantalla-mapa') {
+    const stats = app.querySelector('.stats');
+    if (!stats) return;
+    const [r, x, v] = stats.querySelectorAll('b');
+    if (r) r.textContent = String(rachaVigente());
+    if (x) x.textContent = String(estado.xp);
+    if (v) v.textContent = String(sincronizarVidas());
+  }
+});
+
+verMapa();
+
+})();
+</script>
+</body>
+</html>

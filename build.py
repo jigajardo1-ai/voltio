@@ -210,6 +210,13 @@ def main() -> int:
             encoding="utf-8",
         )
 
+    if not modo_artifact:
+        publicado = RAIZ / "app"
+        publicado.mkdir(exist_ok=True)
+        (publicado / "voltio.html").write_text(salida.read_text(encoding="utf-8"),
+                                               encoding="utf-8")
+        print(f"OK  app/voltio.html  (copia publicada para la app de escritorio)")
+
     kb = salida.stat().st_size / 1024
     print(f"OK  {salida.relative_to(RAIZ)}  ({kb:.0f} kB)")
     if version:

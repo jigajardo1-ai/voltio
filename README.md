@@ -47,10 +47,12 @@ pruebas/
   figuras.html          Banco visual de las animaciones
   formatos.html         Lección sintética con un paso de cada tipo
   parser.html           Casos del parser de respuestas numéricas
+app/voltio.html         Bundle publicado; de aquí se actualiza la app de escritorio
 escritorio/
   voltio_app.py         App de escritorio: ventana nativa sobre WebView2
 herramientas/
   iconos.py             Genera los PNG y el .ico (sin dependencias)
+  acceso_directo.py     Crea el acceso directo del escritorio
 manifest.webmanifest    Datos de la app instalable
 service-worker.js       Caché offline; lo regenera build.py
 iconos/                 PNG generados
@@ -162,34 +164,43 @@ temprano se publica sin tocarlas y las apps instaladas se quedan calladas en la 
 vieja. Los iconos se generan aparte con `python herramientas/iconos.py`, y solo hace falta
 si cambia el diseño.
 
-## App de escritorio (.exe)
+## App de escritorio
 
-Además de la PWA, hay un ejecutable de Windows. Se compila solo en GitHub Actions
-(`.github/workflows/exe.yml`), así que no hace falta instalar nada para generarlo: se
-dispara desde la pestaña *Actions* o publicando una etiqueta `v*`.
-
-No empaqueta un navegador: usa el **WebView2** que Windows 11 ya trae, así que pesa unos
-pocos MB en vez de los ~100 de Electron. El progreso vive en `%LOCALAPPDATA%\Voltio`.
-
-Para probarlo sin compilar:
+Ventana propia, sin navegador a la vista y sin depender de él. Usa el **WebView2** que
+Windows ya trae (el mismo componente que usan muchas apps del sistema), así que no hay que
+empaquetar un navegador entero como haría Electron.
 
 ```bash
-pip install pywebview
+pip install --user pywebview
 python build.py
-python escritorio/voltio_app.py
+python herramientas/acceso_directo.py
 ```
 
-Dos detalles que parecen menores y no lo son:
+Eso deja un acceso directo con el icono de Voltio en el escritorio y en el menú inicio.
+Para quitarlo, `python herramientas/acceso_directo.py --quitar`.
 
+**No se compila a `.exe`, y es deliberado.** Se probó: PyInstaller genera un ejecutable que
+se auto-extrae al arrancar, comportamiento indistinguible del de cierto malware, y Windows
+Defender lo puso en cuarentena antes de que llegara a ejecutarse. No es un problema del
+código —es el precio de distribuir un ejecutable sin firma digital, que cuesta una cuota
+anual— y volvería a pasar en cada actualización. Un script que se puede leer no tiene ese
+problema.
+
+Detalles que parecen menores y deciden si el progreso sobrevive:
+
+- El acceso directo apunta a `pythonw.exe`, no a `python.exe`: el segundo arrastra una
+  consola negra detrás de la ventana.
 - La app se sirve desde `127.0.0.1` con **puerto fijo**, no desde `file://`. El progreso se
   guarda en `localStorage`, que va por origen: un puerto distinto en cada arranque sería un
   origen distinto y el avance se perdería al cerrar.
-- `webview.start()` va con `private_mode=False`. Por defecto pywebview arranca en modo
-  privado y borra `localStorage` al salir, que es exactamente lo que no queremos.
+- `webview.start()` va con `private_mode=False` y un `storage_path` fijo
+  (`%LOCALAPPDATA%\Voltio`). Por defecto pywebview arranca en modo privado y borra
+  `localStorage` al salir; y cambiar esa ruta equivale a empezar de cero.
 
-**Sobre la firma:** el ejecutable no está firmado digitalmente, así que Windows muestra
-"Windows protegió su PC" y algunos antivirus lo marcan como falso positivo. Firmarlo cuesta
-una cuota anual; sin eso, esa fricción no se puede evitar.
+**Se actualiza sola:** al abrir, descarga en segundo plano la última versión desde
+`app/voltio.html` del sitio publicado y la aplica en el siguiente arranque. Sin internet
+abre igual, con la copia que ya tenga. Por eso `build.py` deja una copia del bundle en
+`app/`, que sí se versiona (a diferencia de `dist/`).
 
 ## Guardado del progreso
 
