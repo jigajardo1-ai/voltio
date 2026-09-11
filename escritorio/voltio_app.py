@@ -30,6 +30,10 @@ APP = 'Voltio'
 # avance se perderia al cerrar la app.
 PUERTO = 17280
 
+# Ruta con la que una instancia se identifica: sirve para distinguir nuestra app
+# de cualquier otro programa que ocupe el mismo puerto.
+SENAL = '/__voltio__'
+
 # De aqui se baja la version nueva cuando hay internet.
 ORIGEN = 'https://jigajardo1-ai.github.io/voltio/app/voltio.html'
 
@@ -176,17 +180,63 @@ class Silencioso(SimpleHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-store')
         super().end_headers()
 
+    def do_GET(self):
+        if self.path == SENAL:
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.send_header('Content-Length', '6')
+            self.end_headers()
+            self.wfile.write(b'voltio')
+            return
+        super().do_GET()
 
-def puerto_libre(preferido: int) -> int:
+
+def puerto_ocupado(puerto: int) -> bool:
     with socket.socket() as s:
         try:
-            s.bind(('127.0.0.1', preferido))
-            return preferido
+            s.bind(('127.0.0.1', puerto))
+            return False
         except OSError:
-            pass
-    with socket.socket() as s:
-        s.bind(('127.0.0.1', 0))
-        return s.getsockname()[1]
+            return True
+
+
+def responde_voltio(puerto: int) -> bool:
+    """Distingue nuestra propia app de cualquier otro servicio en ese puerto."""
+    try:
+        with urllib.request.urlopen(f'http://127.0.0.1:{puerto}{SENAL}', timeout=2) as r:
+            return r.read(32) == b'voltio'
+    except Exception:
+        return False
+
+
+def traer_al_frente() -> bool:
+    """Enfoca la ventana de la instancia que ya esta abierta."""
+    if sys.platform != 'win32':
+        return False
+    try:
+        import ctypes
+        user32 = ctypes.windll.user32
+        # Aqui si se busca por titulo: la ventana es de otro proceso.
+        hwnd = user32.FindWindowW(None, APP)
+        if not hwnd:
+            return False
+        user32.ShowWindow(hwnd, 9)            # SW_RESTORE, por si esta minimizada
+        user32.SetForegroundWindow(hwnd)
+        return True
+    except Exception:
+        return False
+
+
+def avisar(texto: str) -> None:
+    """Un cuadro de dialogo, porque con pythonw.exe stderr no lo lee nadie."""
+    print(texto, file=sys.stderr)
+    if sys.platform != 'win32':
+        return
+    try:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(None, texto, APP, 0x30)   # MB_ICONWARNING
+    except Exception:
+        pass
 
 
 def main() -> int:
@@ -206,7 +256,20 @@ def main() -> int:
     # Se busca actualizacion en paralelo: la ventana no espera a la red.
     threading.Thread(target=buscar_actualizacion, args=(datos,), daemon=True).start()
 
-    puerto = puerto_libre(PUERTO)
+    if puerto_ocupado(PUERTO):
+        # Abrir en otro puerto cambiaria el origen, y con el el progreso: el
+        # usuario veria su avance desaparecer sin explicacion. Mejor no abrir.
+        if responde_voltio(PUERTO):
+            if traer_al_frente():
+                return 0                      # ya estaba abierta: se enfoca y listo
+            avisar('Voltio ya esta abierto. Busca su ventana en la barra de tareas.')
+            return 0
+        avisar(f'No puedo abrir Voltio: otro programa esta usando el puerto {PUERTO}.\n\n'
+               'Cierralo y vuelve a intentar. El puerto es fijo a proposito: '
+               'cambiarlo haria desaparecer tu progreso.')
+        return 1
+
+    puerto = PUERTO
     manejador = partial(Silencioso, directory=str(fuente.parent))
     ThreadingHTTPServer.allow_reuse_address = True
     servidor = ThreadingHTTPServer(('127.0.0.1', puerto), manejador)

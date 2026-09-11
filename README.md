@@ -139,6 +139,7 @@ importan los módulos con marca de tiempo, así que no hace falta vaciar la cach
 | `/pruebas/circuitos.html` | Dibuja las topologías con el `viewBox` marcado. En consola, `desbordes()` y `colisiones()` deben devolver `[]`. |
 | `/pruebas/figuras.html` | Lo mismo para las animaciones. Trae un informe visible arriba, y comprueba aparte que el halo de la ampolleta (que lleva blur, invisible a `getBBox`) quepa en el lienzo. |
 | `/pruebas/formatos.html` | Lección sintética con un paso de cada tipo, para probar los formatos sin avanzar por el curso. |
+| `pruebas/persistencia.py` | Que el progreso de la app de escritorio sobreviva al cierre. Se corre con Python, no en el navegador: abre la ventana real. |
 
 Después de tocar `circuito.js` o `visuales.js`, mira los dos bancos visuales; después de
 escribir lecciones, el validador de contenido.
@@ -198,6 +199,14 @@ Detalles que parecen menores y deciden si el progreso sobrevive:
 - La app se sirve desde `127.0.0.1` con **puerto fijo**, no desde `file://`. El progreso se
   guarda en `localStorage`, que va por origen: un puerto distinto en cada arranque sería un
   origen distinto y el avance se perdería al cerrar.
+- Si el puerto está ocupado, la app **no abre en otro**. Antes sí lo hacía, y el resultado
+  era que el usuario perdía su progreso sin explicación ni aviso —el mensaje iba a `stderr`,
+  que con `pythonw.exe` no lo lee nadie—. Ahora, si el puerto lo tiene otra instancia de
+  Voltio, se enfoca esa ventana; y si lo tiene otro programa, sale un cuadro de diálogo
+  explicándolo. Abrir a medias es peor que no abrir.
+- `pruebas/persistencia.py` comprueba justamente eso: escribe el progreso, cierra la app,
+  la abre en otro proceso y verifica que siga ahí. La prueba escribe en el perfil real, así
+  que trae una fase `limpiar` para no dejar un progreso inventado.
 - `webview.start()` va con `private_mode=False` y un `storage_path` fijo
   (`%LOCALAPPDATA%\Voltio`). Por defecto pywebview arranca en modo privado y borra
   `localStorage` al salir; y cambiar esa ruta equivale a empezar de cero.
