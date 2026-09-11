@@ -143,6 +143,41 @@ importan los módulos con marca de tiempo, así que no hace falta vaciar la cach
 Después de tocar `circuito.js` o `visuales.js`, mira los dos bancos visuales; después de
 escribir lecciones, el validador de contenido.
 
+## Cómo entran los cambios
+
+La rama `main` está protegida: **no se puede pushear directo**, ni siquiera siendo dueño del
+repo. Todo pasa por Pull Request.
+
+```bash
+git checkout -b lo-que-sea
+# ...cambios...
+python build.py                 # obligatorio: actualiza el service worker
+git commit -am "descripción"
+git push -u origin lo-que-sea
+gh pr create --fill
+```
+
+Y el merge lo hace una persona, después de mirar el diff.
+
+Qué protege y qué no:
+
+- **Contra terceros:** nadie sin permiso de escritura puede modificar nada. Que el repo sea
+  público solo da permiso de lectura; un extraño puede hacer fork o proponer un PR, y ambas
+  cosas requieren que alguien con acceso las acepte.
+- **Contra accidentes:** `force push` y borrado de `main` están bloqueados, así que el
+  historial no se puede reescribir ni perder.
+- **Lo que NO protege:** cualquiera que use la cuenta dueña del repo —una persona, o un
+  agente autenticado con su token— puede abrir un PR y fusionarlo. La protección no
+  distingue quién está detrás de las credenciales. La defensa real ahí es el 2FA de la
+  cuenta y revisar el diff antes de fusionar.
+
+GitHub Actions está **desactivado**: no se usa ninguno, y dejarlo activo era una superficie
+de ataque gratis (un PR desde un fork puede traer su propio workflow).
+
+El proyecto tampoco tiene dependencias, ni de npm ni de pip, lo que lo deja fuera del vector
+más común de código malicioso en proyectos abiertos: la cadena de suministro. La única
+excepción es `pywebview`, que hace falta solo para la app de escritorio y no para el sitio.
+
 ## Instalar como app
 
 El sitio publicado es una PWA: se instala en el PC y en el teléfono desde el navegador,
