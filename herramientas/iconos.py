@@ -151,6 +151,36 @@ ICONOS = [
 ]
 
 
+def _escribir_ico(ruta: Path, tamanos: list[int]) -> None:
+    """ICO para el ejecutable de Windows.
+
+    Un .ico admite PNG incrustado tal cual desde Vista, asi que basta con
+    envolver los PNG que ya se generaron en la cabecera del formato.
+    """
+    imagenes = []
+    for tam in tamanos:
+        px = construir(tam, 0.82, redondeado=True)
+        tmp = ruta.parent / f"_tmp_{tam}.png"
+        _escribir_png(tmp, tam, px)
+        imagenes.append(tmp.read_bytes())
+        tmp.unlink()
+
+    # ICONDIR: reservado, tipo 1 (icono), cantidad.
+    cabecera = struct.pack("<HHH", 0, 1, len(imagenes))
+    desplazamiento = 6 + 16 * len(imagenes)
+    entradas, cuerpos = b"", b""
+    for tam, datos in zip(tamanos, imagenes):
+        # 0 en ancho/alto significa 256; el resto va tal cual.
+        entradas += struct.pack(
+            "<BBBBHHII",
+            0 if tam >= 256 else tam, 0 if tam >= 256 else tam,
+            0, 0, 1, 32, len(datos), desplazamiento,
+        )
+        cuerpos += datos
+        desplazamiento += len(datos)
+    ruta.write_bytes(cabecera + entradas + cuerpos)
+
+
 def main() -> int:
     SALIDA.mkdir(exist_ok=True)
     for nombre, tam, escala, redondeado in ICONOS:
@@ -158,6 +188,10 @@ def main() -> int:
         ruta = SALIDA / nombre
         _escribir_png(ruta, tam, px)
         print(f"OK  {ruta.relative_to(RAIZ)}  ({ruta.stat().st_size / 1024:.0f} kB)")
+
+    ico = SALIDA / "voltio.ico"
+    _escribir_ico(ico, [16, 32, 48, 64, 128, 256])
+    print(f"OK  {ico.relative_to(RAIZ)}  ({ico.stat().st_size / 1024:.0f} kB)")
     return 0
 
 

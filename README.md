@@ -47,8 +47,10 @@ pruebas/
   figuras.html          Banco visual de las animaciones
   formatos.html         Lección sintética con un paso de cada tipo
   parser.html           Casos del parser de respuestas numéricas
+escritorio/
+  voltio_app.py         App de escritorio: ventana nativa sobre WebView2
 herramientas/
-  iconos.py             Genera los PNG de la app (sin dependencias)
+  iconos.py             Genera los PNG y el .ico (sin dependencias)
 manifest.webmanifest    Datos de la app instalable
 service-worker.js       Caché offline; lo regenera build.py
 iconos/                 PNG generados
@@ -159,6 +161,35 @@ archivos del service worker a partir del contenido real. Si se llevaran a mano, 
 temprano se publica sin tocarlas y las apps instaladas se quedan calladas en la versión
 vieja. Los iconos se generan aparte con `python herramientas/iconos.py`, y solo hace falta
 si cambia el diseño.
+
+## App de escritorio (.exe)
+
+Además de la PWA, hay un ejecutable de Windows. Se compila solo en GitHub Actions
+(`.github/workflows/exe.yml`), así que no hace falta instalar nada para generarlo: se
+dispara desde la pestaña *Actions* o publicando una etiqueta `v*`.
+
+No empaqueta un navegador: usa el **WebView2** que Windows 11 ya trae, así que pesa unos
+pocos MB en vez de los ~100 de Electron. El progreso vive en `%LOCALAPPDATA%\Voltio`.
+
+Para probarlo sin compilar:
+
+```bash
+pip install pywebview
+python build.py
+python escritorio/voltio_app.py
+```
+
+Dos detalles que parecen menores y no lo son:
+
+- La app se sirve desde `127.0.0.1` con **puerto fijo**, no desde `file://`. El progreso se
+  guarda en `localStorage`, que va por origen: un puerto distinto en cada arranque sería un
+  origen distinto y el avance se perdería al cerrar.
+- `webview.start()` va con `private_mode=False`. Por defecto pywebview arranca en modo
+  privado y borra `localStorage` al salir, que es exactamente lo que no queremos.
+
+**Sobre la firma:** el ejecutable no está firmado digitalmente, así que Windows muestra
+"Windows protegió su PC" y algunos antivirus lo marcan como falso positivo. Firmarlo cuesta
+una cuota anual; sin eso, esa fricción no se puede evitar.
 
 ## Guardado del progreso
 

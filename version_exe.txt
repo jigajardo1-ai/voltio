@@ -1,0 +1,32 @@
+# Metadatos del ejecutable de Windows (los que se ven en Propiedades -> Detalles).
+#
+# Un .exe sin estos datos parece mas sospechoso a SmartScreen y a los antivirus.
+# No sustituye a una firma digital, pero ayuda y no cuesta nada.
+
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 0, 0, 0),
+    prodvers=(1, 0, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0),
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable('040a04b0', [            # es-ES, Unicode
+        StringStruct('CompanyName', 'Proyecto personal'),
+        StringStruct('FileDescription', 'Voltio - Aprende electricidad'),
+        StringStruct('FileVersion', '1.0.0.0'),
+        StringStruct('InternalName', 'Voltio'),
+        StringStruct('LegalCopyright', 'Codigo abierto - github.com/jigajardo1-ai/voltio'),
+        StringStruct('OriginalFilename', 'Voltio.exe'),
+        StringStruct('ProductName', 'Voltio'),
+        StringStruct('ProductVersion', '1.0.0.0'),
+      ]),
+    ]),
+    VarFileInfo([VarStruct('Translation', [0x040a, 1200])]),
+  ],
+)
