@@ -134,6 +134,30 @@ importan los módulos con marca de tiempo, así que no hace falta vaciar la cach
 Después de tocar `circuito.js` o `visuales.js`, mira los dos bancos visuales; después de
 escribir lecciones, el validador de contenido.
 
+## Guardado del progreso
+
+El avance se guarda solo en `localStorage`, por navegador y dispositivo. No hay cuenta ni
+servidor, así que se pierde si limpias los datos de navegación y no viaja solo a otro
+equipo. Para eso están los respaldos, en Ajustes:
+
+- **Descargar archivo** — un `.json` legible.
+- **Copiar código** — el mismo contenido en base64, unos 300 caracteres: cabe en un mensaje
+  y sirve para pasar el progreso al celular.
+
+Restaurar acepta los dos formatos indistintamente, y **fusiona**: se queda con lo mejor de
+cada lado, así que traer un respaldo viejo nunca te baja estrellas ya ganadas.
+
+Si el navegador tiene el almacenamiento bloqueado (ventana privada, cookies bloqueadas), la
+app lo detecta al arrancar y lo avisa en el mapa. Antes fallaba en silencio, que es la peor
+forma de fallar: te enteras después de una hora de juego.
+
+En el Artifact publicado la descarga usa la capacidad `downloads` del visor, porque ahí los
+enlaces con `download` quedan inertes; fuera de ese contexto se usa un blob normal.
+
+**Pendiente:** guardado vinculado a cuenta de Google (Firebase Auth + Firestore). No puede
+funcionar dentro del Artifact —su CSP bloquea los scripts y las llamadas de Google— pero sí
+en la versión local o desplegada en un hosting con https.
+
 ## Estado
 
 - **Listo:** fundamentos (5 lecciones, incluida potencia) y serie/paralelo (4 lecciones):

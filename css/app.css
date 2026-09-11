@@ -539,6 +539,50 @@ button:disabled { cursor: not-allowed; }
 .grid-stats b { display: block; font-size: 1.5rem; color: var(--marca-osc); }
 .grid-stats span { font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; color: var(--texto-suave); font-weight: 700; }
 
+/* ── Respaldo del progreso ───────────────────────────────────────────────── */
+
+.banda-aviso {
+  background: var(--mal-suave);
+  border: 1px solid color-mix(in srgb, var(--mal) 40%, transparent);
+  border-left: 4px solid var(--mal);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 22px;
+  font-size: .92rem;
+}
+
+.tarjeta h4 {
+  margin: 18px 0 8px;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--texto-suave);
+}
+.fila-botones { display: flex; gap: 10px; flex-wrap: wrap; }
+.campo-respaldo {
+  width: 100%;
+  font: 500 .82rem var(--mono);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--borde);
+  background: var(--superficie-2);
+  color: var(--texto);
+  resize: vertical;
+  margin-bottom: 10px;
+}
+.campo-respaldo:focus { outline: none; border-color: var(--azul); }
+.aviso-guardado {
+  border-radius: 8px; padding: 9px 12px; font-size: .89rem; font-weight: 600;
+}
+.aviso-guardado.mal { background: var(--mal-suave); color: var(--mal-osc); }
+.resultado-respaldo:empty { display: none; }
+.resultado-respaldo {
+  margin: 12px 0 0; font-size: .89rem; font-weight: 700;
+}
+.resultado-respaldo.ok { color: var(--ok-osc); }
+.resultado-respaldo.mal { color: var(--mal-osc); }
+.nota-fina { font-size: .82rem; color: var(--texto-suave); margin: 12px 0 0; }
+
 /* ── Responsive y accesibilidad ──────────────────────────────────────────── */
 
 @media (max-width: 560px) {

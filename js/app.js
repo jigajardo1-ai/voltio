@@ -5,6 +5,7 @@ import { reproducirLeccion } from './motor.js';
 import {
   estado, suscribir, rachaVigente, sincronizarVidas, rellenarVidas,
   completarLeccion, estaCompletada, estrellasDe, reiniciarTodo,
+  exportarJSON, exportarCodigo, importar, guardadoSano, hayAlmacenamiento,
 } from './estado.js';
 
 import fundamentos from '../lecciones/01-fundamentos.js';
@@ -16,6 +17,49 @@ import laplace from '../lecciones/05-laplace.js';
 const MODULOS = [fundamentos, topologias, inductores, capacitores, laplace];
 
 const app = document.getElementById('app');
+
+// ── Descarga de archivos ────────────────────────────────────────────────────
+//
+// Publicada como Artifact, la pagina corre en un visor donde los enlaces con
+// `download` quedan inertes y hay que pedirle el guardado al anfitrion. Fuera
+// de ahi no existe ese anfitrion y toca el blob de toda la vida. Se resuelve
+// una sola vez al arrancar para no hacer esperar al usuario en pleno clic.
+
+let guardadorAnfitrion = null;
+if (typeof window !== 'undefined' && typeof window.claude?.use === 'function') {
+  Promise.resolve(window.claude.use('downloads'))
+    .then((d) => { guardadorAnfitrion = d; })
+    .catch(() => { guardadorAnfitrion = null; });
+}
+
+async function descargar(nombre, contenido, tipo = 'application/json') {
+  if (guardadorAnfitrion) {
+    try {
+      await guardadorAnfitrion.save({ filename: nombre, data: contenido });
+      return true;
+    } catch {
+      return false;                 // el visor puede rechazarlo; no es un fallo
+    }
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return true;
+  } catch { return false; }
+}
+
+async function alPortapapeles(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+    return true;
+  } catch { return false; }
+}
 
 // ── Reglas de desbloqueo ────────────────────────────────────────────────────
 // Dentro de un modulo se avanza en orden. Un modulo se abre cuando el anterior
@@ -124,6 +168,11 @@ function verMapa() {
   app.append(
     construirBarra(),
     h('main', { class: 'mapa' }, [
+      hayAlmacenamiento ? null : h('div', { class: 'banda-aviso', role: 'status' }, [
+        h('b', {}, ['Tu progreso no se está guardando. ']),
+        'Este navegador tiene el almacenamiento bloqueado (suele ser una ventana privada). ',
+        'Lo que avances se perderá al cerrar la pestaña.',
+      ]),
       h('div', { class: 'saludo' }, [
         h('h1', {}, ['Aprende electricidad']),
         h('p', {}, ['Una lección corta al día y en un mes entiendes circuitos de verdad.']),
@@ -153,6 +202,97 @@ async function iniciarLeccion(mod, lec) {
 
 // ── Ajustes ─────────────────────────────────────────────────────────────────
 
+/**
+ * Respaldo del progreso. Sin cuenta ni servidor, esto es lo unico que lo salva
+ * de un "limpiar datos de navegacion" y la unica via de llevarlo a otro
+ * dispositivo, asi que va explicado, no escondido tras un icono.
+ */
+function construirRespaldo() {
+  const aviso = h('p', { class: 'aviso-guardado' });
+  const campo = h('textarea', {
+    class: 'campo-respaldo', rows: '3', spellcheck: 'false',
+    placeholder: 'Pega aquí tu código de respaldo…',
+    'aria-label': 'Código de respaldo para importar',
+  });
+  const resultado = h('p', { class: 'resultado-respaldo' });
+
+  const decir = (txt, clase = '') => {
+    resultado.textContent = txt;
+    resultado.className = `resultado-respaldo ${clase}`;
+  };
+
+  const fecha = new Date().toISOString().slice(0, 10);
+
+  const tarjeta = h('div', { class: 'tarjeta' }, [
+    h('h3', {}, ['Respaldo del progreso']),
+    aviso,
+    h('p', {}, [
+      'Tu avance se guarda en este navegador. Si limpias los datos de navegación se borra, ',
+      'y no viaja solo a otro dispositivo. Sácale un respaldo de vez en cuando.',
+    ]),
+    h('div', { class: 'fila-botones' }, [
+      h('button', {
+        class: 'btn secundario',
+        onClick: async (ev) => {
+          const ok = await descargar(`voltio-progreso-${fecha}.json`, exportarJSON());
+          decir(ok ? 'Archivo descargado.' : 'El navegador no permitió la descarga. Usa el código.',
+            ok ? 'ok' : 'mal');
+          ev.target.blur();
+        },
+      }, ['Descargar archivo']),
+      h('button', {
+        class: 'btn secundario',
+        onClick: async (ev) => {
+          const codigo = exportarCodigo();
+          const ok = await alPortapapeles(codigo);
+          if (ok) decir('Código copiado. Pégalo en el otro dispositivo.', 'ok');
+          else {
+            // Sin portapapeles queda mostrarlo para copiar a mano.
+            campo.value = codigo;
+            campo.select();
+            decir('No pude copiarlo solo: está en el cuadro, cópialo tú.', '');
+          }
+          ev.target.blur();
+        },
+      }, ['Copiar código']),
+    ]),
+    h('h4', {}, ['Restaurar']),
+    campo,
+    h('div', { class: 'fila-botones' }, [
+      h('button', {
+        class: 'btn secundario',
+        onClick: () => {
+          try {
+            const r = importar(campo.value);
+            decir(`Listo: ${r.lecciones} lecciones y ${r.xp} XP.`, 'ok');
+            campo.value = '';
+            setTimeout(verAjustes, 1200);
+          } catch (e) {
+            decir(e.message, 'mal');
+          }
+        },
+      }, ['Restaurar respaldo']),
+    ]),
+    h('p', { class: 'nota-fina' }, [
+      'Al restaurar se conserva lo mejor de cada lado: si ya tenías una lección con más ',
+      'estrellas, no la pierdes.',
+    ]),
+    resultado,
+  ]);
+
+  if (!hayAlmacenamiento) {
+    aviso.className = 'aviso-guardado mal';
+    aviso.textContent = 'Este navegador no permite guardar: tu progreso se perderá al cerrar '
+      + 'la pestaña. Suele pasar en ventanas privadas o con las cookies bloqueadas.';
+  } else if (!guardadoSano()) {
+    aviso.className = 'aviso-guardado mal';
+    aviso.textContent = 'La última vez que intenté guardar hubo un error. Saca un respaldo ahora.';
+  } else {
+    aviso.remove();
+  }
+  return tarjeta;
+}
+
 function verAjustes() {
   app.innerHTML = '';
   app.className = 'pantalla-ajustes';
@@ -177,6 +317,7 @@ function verAjustes() {
         h('button', { class: 'btn secundario', onClick: () => { rellenarVidas(); verAjustes(); } },
           ['Rellenar vidas']),
       ]),
+      construirRespaldo(),
       h('div', { class: 'tarjeta' }, [
         h('h3', {}, ['Modo libre']),
         h('p', {}, ['Abre todas las lecciones sin respetar el orden. Útil para repasar o revisar contenido.']),
