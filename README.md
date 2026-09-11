@@ -47,7 +47,12 @@ pruebas/
   figuras.html          Banco visual de las animaciones
   formatos.html         Lección sintética con un paso de cada tipo
   parser.html           Casos del parser de respuestas numéricas
-build.py                Empaqueta todo en un archivo único
+herramientas/
+  iconos.py             Genera los PNG de la app (sin dependencias)
+manifest.webmanifest    Datos de la app instalable
+service-worker.js       Caché offline; lo regenera build.py
+iconos/                 PNG generados
+build.py                Empaqueta todo y actualiza el service worker
 ```
 
 ## Cómo agregar contenido
@@ -133,6 +138,27 @@ importan los módulos con marca de tiempo, así que no hace falta vaciar la cach
 
 Después de tocar `circuito.js` o `visuales.js`, mira los dos bancos visuales; después de
 escribir lecciones, el validador de contenido.
+
+## Instalar como app
+
+El sitio publicado es una PWA: se instala en el PC y en el teléfono desde el navegador,
+sin pasar por ninguna tienda.
+
+<https://jigajardo1-ai.github.io/voltio>
+
+- **Android / Chrome:** menú ⋮ → "Instalar aplicación".
+- **iPhone / Safari:** botón compartir → "Añadir a pantalla de inicio".
+- **PC (Chrome o Edge):** icono de instalar en la barra de direcciones.
+
+Una vez instalada funciona sin internet, porque `service-worker.js` guarda todos los
+archivos la primera vez. Cada `git push` actualiza el sitio, y la app instalada detecta la
+versión nueva al abrirse y ofrece actualizar.
+
+**`python build.py` es obligatorio antes de publicar**: reescribe la versión y la lista de
+archivos del service worker a partir del contenido real. Si se llevaran a mano, tarde o
+temprano se publica sin tocarlas y las apps instaladas se quedan calladas en la versión
+vieja. Los iconos se generan aparte con `python herramientas/iconos.py`, y solo hace falta
+si cambia el diseño.
 
 ## Guardado del progreso
 

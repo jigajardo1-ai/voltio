@@ -338,6 +338,24 @@ function verAjustes() {
   );
 }
 
+// ── Actualizaciones de la app instalada ─────────────────────────────────────
+
+function mostrarActualizacion(aplicar) {
+  if (document.querySelector('.banda-version')) return;
+  const banda = h('div', { class: 'banda-version', role: 'status' }, [
+    h('span', {}, ['Hay una versión nueva de Voltio.']),
+    h('button', {
+      class: 'btn secundario chico',
+      onClick: (ev) => { ev.target.textContent = 'Actualizando…'; ev.target.disabled = true; aplicar(); },
+    }, ['Actualizar']),
+  ]);
+  document.body.appendChild(banda);
+}
+
+window.addEventListener('voltio:actualizacion', (ev) => {
+  mostrarActualizacion(ev.detail.aplicar);
+});
+
 // ── Arranque ────────────────────────────────────────────────────────────────
 
 suscribir(() => {

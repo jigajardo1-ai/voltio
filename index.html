@@ -6,7 +6,14 @@
   <title>Voltio — Aprende electricidad</title>
   <meta name="description" content="Curso interactivo de electricidad: voltaje, corriente, resistencia, circuitos serie y paralelo.">
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f0a500">
+
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Voltio">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/app.css">
@@ -14,5 +21,55 @@
 <body>
   <div id="app"><noscript>Voltio necesita JavaScript para funcionar.</noscript></div>
   <script type="module" src="js/app.js"></script>
+
+  <script>
+    // El registro del service worker vive aqui y no en los modulos a proposito:
+    // asi el bundle de un solo archivo (dist/) no arrastra codigo que solo tiene
+    // sentido servido desde un sitio. La app se entera de que hay version nueva
+    // por un evento, y si nunca llega —porque no hay service worker— no pasa nada.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const reg = await navigator.serviceWorker.register('service-worker.js');
+
+          const avisar = (worker) => {
+            window.dispatchEvent(new CustomEvent('voltio:actualizacion', {
+              detail: {
+                aplicar() {
+                  // El worker nuevo espera a que se cierren las pestañas; se le
+                  // pide que tome el control ahora y se recarga al conseguirlo.
+                  worker.postMessage('SALTAR_ESPERA');
+                },
+              },
+            }));
+          };
+
+          // Ya habia una version nueva esperando de una visita anterior.
+          if (reg.waiting && navigator.serviceWorker.controller) avisar(reg.waiting);
+
+          reg.addEventListener('updatefound', () => {
+            const nuevo = reg.installing;
+            if (!nuevo) return;
+            nuevo.addEventListener('statechange', () => {
+              // Sin controller es la primera instalacion, no una actualizacion:
+              // ahi no hay nada que avisar.
+              if (nuevo.state === 'installed' && navigator.serviceWorker.controller) {
+                avisar(nuevo);
+              }
+            });
+          });
+
+          let recargando = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (recargando) return;
+            recargando = true;
+            window.location.reload();
+          });
+        } catch {
+          // Sin service worker la app funciona igual, solo que sin modo offline.
+        }
+      });
+    }
+  </script>
 </body>
 </html>

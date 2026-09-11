@@ -16,6 +16,7 @@ son los renombres (`x as y`), que se vuelven un alias explicito.
 
 from __future__ import annotations
 
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -136,8 +137,48 @@ FAVICON = ("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='
            "<text y='.9em' font-size='90'>&#9889;</text></svg>")
 
 
+# Lo que el service worker tiene que guardar para que la app abra sin internet.
+PATRONES_PWA = ["index.html", "manifest.webmanifest", "css/*.css", "js/*.js",
+                "lecciones/*.js", "iconos/*.png"]
+
+
+def archivos_pwa() -> list[str]:
+    rutas: list[str] = []
+    for patron in PATRONES_PWA:
+        rutas += sorted(p.relative_to(RAIZ).as_posix() for p in RAIZ.glob(patron))
+    return rutas
+
+
+def actualizar_service_worker() -> str:
+    """Reescribe VERSION y ARCHIVOS con el contenido real del proyecto.
+
+    La version sale del hash de los archivos servidos: cambia sola cuando cambia
+    algo y no cambia cuando no. Si se llevara a mano, tarde o temprano alguien
+    publica sin tocarla y las apps instaladas se quedan con la version vieja.
+    """
+    sw = RAIZ / "service-worker.js"
+    if not sw.exists():
+        return ""
+
+    rutas = archivos_pwa()
+    h = hashlib.sha256()
+    for r in rutas:
+        h.update(r.encode())
+        h.update((RAIZ / r).read_bytes())
+    version = "v" + h.hexdigest()[:7]
+
+    listado = "\n".join(f"  './{r}'," for r in rutas)
+    texto = sw.read_text(encoding="utf-8")
+    texto = re.sub(r"const VERSION = '[^']*';", f"const VERSION = '{version}';", texto)
+    texto = re.sub(r"const ARCHIVOS = \[.*?\];",
+                   f"const ARCHIVOS = [\n  './',\n{listado}\n];", texto, flags=re.S)
+    sw.write_text(texto, encoding="utf-8")
+    return version
+
+
 def main() -> int:
     modo_artifact = "--artifact" in sys.argv
+    version = actualizar_service_worker()
     css = (RAIZ / "css" / "app.css").read_text(encoding="utf-8")
     js = construir_js()
     DIST.mkdir(exist_ok=True)
@@ -171,6 +212,8 @@ def main() -> int:
 
     kb = salida.stat().st_size / 1024
     print(f"OK  {salida.relative_to(RAIZ)}  ({kb:.0f} kB)")
+    if version:
+        print(f"OK  service-worker.js  ({version}, {len(archivos_pwa())} archivos)")
     return 0
 
 
