@@ -50,8 +50,10 @@
       ['Serie · 5 R (usa riel derecho)', { tipo: 'serie', fuente: { etiqueta: '24 V' },
         ramas: [{ nombre: 'R₁', valor: '1 kΩ' }, { nombre: 'R₂', valor: '2 kΩ' }, { nombre: 'R₃', valor: '3 kΩ' },
                 { nombre: 'R₄', valor: '4 kΩ' }, { nombre: 'R₅', valor: '5 kΩ' }] }],
-      ['Serie · abierto', { tipo: 'serie', fuente: { etiqueta: '9 V' },
-        ramas: [{ nombre: 'R', valor: '100 Ω' }], corriente: { velocidad: 0 }, nota: 'circuito abierto' }],
+      ['Serie · abierto (con corte)', { tipo: 'serie', fuente: { etiqueta: '9 V' },
+        ramas: [{ nombre: 'R', valor: '100 Ω' }], abierto: true, nota: 'el camino esta interrumpido' }],
+      ['Serie · abierto con 2 R', { tipo: 'serie', fuente: { etiqueta: '12 V' },
+        ramas: [{ nombre: 'R₁', valor: '330 Ω' }, { nombre: 'R₂', valor: '470 Ω' }], abierto: true }],
 
       ['Paralelo · 2 ramas', { tipo: 'paralelo', fuente: { etiqueta: '12 V' },
         ramas: [{ nombre: 'R₁', valor: '100 Ω' }, { nombre: 'R₂', valor: '100 Ω' }] }],

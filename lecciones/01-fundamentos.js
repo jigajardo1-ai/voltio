@@ -63,11 +63,15 @@ export default {
             tipo: 'serie',
             fuente: { etiqueta: '9 V' },
             ramas: [{ nombre: 'R', valor: '100 Ω' }],
-            corriente: { velocidad: 0 },
-            nota: 'circuito abierto: nada circula',
+            abierto: true,
+            nota: 'el camino está interrumpido',
           },
           explicacion: `<p>La corriente necesita un <b>camino cerrado</b>. Sin lazo completo no
-            circula carga, por mucho voltaje que tenga la fuente.</p>`,
+            circula carga, por mucho voltaje que tenga la fuente.</p>
+            <p class="dato">Ojo con una confusión frecuente: <b>R sigue valiendo 100 Ω</b>. Eso es
+            una propiedad del componente y no cambia porque cortes un cable en otra parte. Lo que
+            se vuelve infinito es la resistencia <i>del camino</i>, por culpa del corte. Por eso
+            I = V/R da cero: el infinito está en el denominador, pero no lo pone la resistencia.</p>`,
         },
         {
           tipo: 'entrada',

@@ -153,6 +153,20 @@ function cable(pts) {
 /** Punto de union donde se juntan tres o mas cables. */
 function nodo(x, y) { return el('circle', { cx: x, cy: y, r: 4.5, class: 'cz-nodo' }); }
 
+/**
+ * Interrupcion del camino: dos terminales enfrentados con aire entre medio.
+ *
+ * Un circuito abierto tiene que *verse* abierto. Sugerirlo solo quitando los
+ * electrones deja un dibujo que se lee como un lazo cerrado perfectamente
+ * normal, y entonces el diagrama contradice al enunciado.
+ */
+function corte(cx, cy, semiancho) {
+  const g = el('g', { class: 'cz-corte' });
+  g.appendChild(el('circle', { cx: cx - semiancho, cy, r: 4.5, class: 'cz-terminal' }));
+  g.appendChild(el('circle', { cx: cx + semiancho, cy, r: 4.5, class: 'cz-terminal' }));
+  return g;
+}
+
 /** Flecha de corriente con etiqueta. `dir` es hacia donde apunta la punta. */
 function flechaCorriente(x, y, etiqueta, dir = 'derecha', anclaTexto = 'arriba') {
   const g = el('g', { class: 'cz-flecha' });
@@ -220,7 +234,16 @@ function armarSerie(spec, svg, W, H) {
   const largoS = Math.min(66, paso * 0.56);
 
   svg.appendChild(cable([[xL, cyF - 26], [xL, yT], [xR, yT]]));
-  svg.appendChild(cable([[xR, yT], [xR, yB], [xL, yB], [xL, cyF + 26]]));
+  if (spec.abierto) {
+    // El corte va en el riel de retorno, que siempre esta despejado.
+    const xMedio = (xL + xR) / 2;
+    const hueco = 18;
+    svg.appendChild(cable([[xR, yT], [xR, yB], [xMedio + hueco, yB]]));
+    svg.appendChild(cable([[xMedio - hueco, yB], [xL, yB], [xL, cyF + 26]]));
+    svg.appendChild(corte(xMedio, yB, hueco));
+  } else {
+    svg.appendChild(cable([[xR, yT], [xR, yB], [xL, yB], [xL, cyF + 26]]));
+  }
   svg.appendChild(fuenteDC(xL, cyF, spec.fuente?.etiqueta, spec.fuente?.hueco));
 
   arriba.forEach((r, i) => {
@@ -350,8 +373,8 @@ export function construirCircuito(spec) {
             :                            armarSerie(spec, svg, W, H);
 
   if (spec.corriente !== false) {
-    const vel = spec.corriente?.velocidad ?? 1;
-    // Velocidad 0 = circuito abierto: no circula nada, no se dibuja nada.
+    const vel = spec.abierto ? 0 : (spec.corriente?.velocidad ?? 1);
+    // Sin lazo cerrado no circula nada, aunque el spec pida velocidad.
     if (vel > 0) svg.appendChild(electrones(geo.loop, { dur: 4 / vel }));
     if (spec.corriente?.etiqueta) {
       // Arriba solo si queda tramo libre entre la fuente y el primer componente;

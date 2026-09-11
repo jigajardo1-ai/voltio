@@ -443,6 +443,9 @@ button:disabled { cursor: not-allowed; }
 }
 .cz-tapa { fill: var(--superficie); stroke: none; }
 .cz-nodo { fill: var(--cable); }
+/* Terminales a ambos lados de una interrupcion: huecos, para que se lea
+   que ahi el camino termina y no que hay un empalme. */
+.cz-terminal { fill: var(--superficie); stroke: var(--cable); stroke-width: 2.4; }
 .cz-barra-larga, .cz-barra-corta { stroke: var(--cable); stroke-width: 3.4; stroke-linecap: round; }
 .cz-signo { font: 700 15px var(--fuente); fill: var(--texto-suave); }
 .cz-nombre { font: 800 14px var(--fuente); fill: var(--texto); }

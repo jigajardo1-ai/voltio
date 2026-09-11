@@ -4,7 +4,7 @@
 // real del proyecto: si se editan a mano se desincronizan y la app se queda
 // servindo una version vieja sin que nadie se entere.
 
-const VERSION = 'vf114c57';
+const VERSION = 'v25f1eaf';
 const ARCHIVOS = [
   './',
   './index.html',
