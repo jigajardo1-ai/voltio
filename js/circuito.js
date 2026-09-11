@@ -74,9 +74,26 @@ function resistor(cfg) {
   const {
     cx, cy, largo = 66, vertical = false,
     nombre = '', valor = '', hueco = null, destacado = false, ladoEtiqueta = 'auto',
+    id = null,
   } = cfg;
 
-  const g = el('g', { class: 'cz-comp' + (destacado ? ' cz-destacado' : '') });
+  const g = el('g', {
+    class: 'cz-comp' + (destacado ? ' cz-destacado' : '') + (id ? ' cz-senalable' : ''),
+    'data-comp': id,
+    tabindex: id ? '0' : null,
+    role: id ? 'button' : null,
+    'aria-label': id ? `Componente ${nombre || id}` : null,
+  });
+  if (id) {
+    // Area de acierto generosa: el zigzag es un trazo fino y con el dedo no se
+    // acierta. El rectangulo transparente se dibuja primero, debajo de todo.
+    const m = 26;
+    g.appendChild(el('rect', {
+      x: cx - (vertical ? m : largo / 2 + 10), y: cy - (vertical ? largo / 2 + 10 : m),
+      width: vertical ? m * 2 : largo + 20, height: vertical ? largo + 20 : m * 2,
+      class: 'cz-golpe', rx: 8,
+    }));
+  }
   g.appendChild(zigzag(cx, cy, largo, vertical));
 
   // El zigzag ocupa +-11 alrededor del eje, asi que las etiquetas tienen que
@@ -154,12 +171,12 @@ function flechaCorriente(x, y, etiqueta, dir = 'derecha', anclaTexto = 'arriba')
  * Puntos animados recorriendo un camino cerrado. Es la forma mas directa de
  * mostrar que algo circula, y de que la velocidad signifique magnitud.
  */
-function electrones(pathD, { cantidad = 8, dur = 4 } = {}) {
+function electrones(pathD, { cantidad = 8, dur = 4, clase = 'cz-e', radio = 4.5 } = {}) {
   const id = nuevoId('cz-camino');
   const g = el('g', { class: 'cz-electrones' });
   g.appendChild(el('path', { id, d: pathD, fill: 'none', stroke: 'none' }));
   for (let i = 0; i < cantidad; i++) {
-    const p = el('circle', { r: 4.5, class: 'cz-e' });
+    const p = el('circle', { r: radio, class: clase });
     const mp = el('mpath', { href: `#${id}` });
     // Safari todavia pide la forma con namespace xlink.
     mp.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', `#${id}`);
@@ -211,7 +228,7 @@ function armarSerie(spec, svg, W, H) {
       { x: centros[i] - largoS / 2 - 3, y: yT - 6, width: largoS + 6, height: 12, class: 'cz-tapa' }));
     svg.appendChild(resistor({
       cx: centros[i], cy: yT, largo: largoS, nombre: r.nombre, valor: r.valor,
-      hueco: r.hueco, destacado: r.destacado, ladoEtiqueta: 'arriba',
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'arriba',
     }));
   });
 
@@ -222,7 +239,7 @@ function armarSerie(spec, svg, W, H) {
       { x: xR - 6, y: cy - largoD / 2 - 3, width: 12, height: largoD + 6, class: 'cz-tapa' }));
     svg.appendChild(resistor({
       cx: xR, cy, largo: largoD, vertical: true, nombre: r.nombre, valor: r.valor,
-      hueco: r.hueco, destacado: r.destacado, ladoEtiqueta: 'izquierda',
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'izquierda',
     }));
   });
 
@@ -252,7 +269,7 @@ function armarParalelo(spec, svg, W, H) {
     svg.appendChild(el('rect', { x: x - 6, y: cyF - 36, width: 12, height: 72, class: 'cz-tapa' }));
     svg.appendChild(resistor({
       cx: x, cy: cyF, vertical: true, nombre: r.nombre, valor: r.valor,
-      hueco: r.hueco, destacado: r.destacado, ladoEtiqueta: 'derecha',
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'derecha',
     }));
     if (i > 0 && i < ramas.length - 1) {
       svg.appendChild(nodo(x, yT));
@@ -286,7 +303,7 @@ function armarMixto(spec, svg, W, H) {
     svg.appendChild(el('rect', { x: xSerie - 36, y: yT - 6, width: 72, height: 12, class: 'cz-tapa' }));
     svg.appendChild(resistor({
       cx: xSerie, cy: yT, nombre: serie[0].nombre, valor: serie[0].valor,
-      hueco: serie[0].hueco, destacado: serie[0].destacado, ladoEtiqueta: 'arriba',
+      hueco: serie[0].hueco, destacado: serie[0].destacado, id: serie[0].id, ladoEtiqueta: 'arriba',
     }));
   }
 
@@ -296,7 +313,7 @@ function armarMixto(spec, svg, W, H) {
     svg.appendChild(el('rect', { x: x - 6, y: cyF - 36, width: 12, height: 72, class: 'cz-tapa' }));
     svg.appendChild(resistor({
       cx: x, cy: cyF, vertical: true, nombre: r.nombre, valor: r.valor,
-      hueco: r.hueco, destacado: r.destacado, ladoEtiqueta: 'derecha',
+      hueco: r.hueco, destacado: r.destacado, id: r.id, ladoEtiqueta: 'derecha',
     }));
     if (i > 0 && i < par.length - 1) { svg.appendChild(nodo(x, yT)); svg.appendChild(nodo(x, yB)); }
   });

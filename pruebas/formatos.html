@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voltio · pruebas de formatos</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <style>
+    #app { max-width: 760px; margin: 0 auto; }
+    .aviso { max-width: 760px; margin: 0 auto 10px; padding: 10px 16px; background: var(--marca-suave);
+             border-radius: 10px; font-size: .88rem; }
+  </style>
+</head>
+<body>
+  <div class="aviso">Lección sintética con un paso de cada tipo, para probar los formatos sin
+    tener que avanzar por el curso. El resultado final se imprime en consola.</div>
+  <div id="app"></div>
+
+  <script type="module">
+    {
+      const hoja = document.querySelector('link[rel="stylesheet"]');
+      hoja.href = `../css/app.css?t=${Date.now()}`;
+    }
+    const t = Date.now();
+    const { reproducirLeccion } = await import(`../js/motor.js?t=${t}`);
+    const { rellenarVidas } = await import(`../js/estado.js?t=${t}`);
+    rellenarVidas();
+
+    const LECCION = {
+      id: 'prueba-formatos',
+      xp: 10,
+      pasos: [
+        {
+          tipo: 'multiple',
+          pregunta: 'MULTIPLE · marca las correctas (son la 1 y la 3 del listado original)',
+          opciones: ['Correcta A', 'Señuelo B', 'Correcta C', 'Señuelo D'],
+          correctas: [0, 2],
+          explicacion: '<p>Se corrige como conjunto: sobra una o falta una y está mal.</p>',
+        },
+        {
+          tipo: 'emparejar',
+          enunciado: 'EMPAREJAR · une magnitud con unidad',
+          pares: [
+            { a: 'Voltaje', b: 'volt (V)' },
+            { a: 'Corriente', b: 'ampere (A)' },
+            { a: 'Resistencia', b: 'ohm (Ω)' },
+          ],
+          explicacion: '<p>Se cierra solo al emparejar todo.</p>',
+        },
+        {
+          tipo: 'ordenar',
+          enunciado: 'ORDENAR · tócalos en orden',
+          pasos: ['Primero', 'Segundo', 'Tercero', 'Cuarto'],
+          explicacion: '<p>El orden declarado en el array es el correcto.</p>',
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'SEÑALAR · toca R₂ en el diagrama',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '18 V' },
+            serie: [{ nombre: 'R₁', valor: '220 Ω', id: 'r1' }],
+            paralelo: [
+              { nombre: 'R₂', valor: '330 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '470 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 1.1 },
+          },
+          correcta: 'r2',
+          nombreCorrecto: 'R₂',
+          explicacion: '<p>Los componentes con <code>id</code> se vuelven seleccionables.</p>',
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'SEÑALAR (serie) · toca R₃',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '12 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '220 Ω', id: 'r1' },
+              { nombre: 'R₂', valor: '680 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '100 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 0.7 },
+          },
+          correcta: 'r3',
+          nombreCorrecto: 'R₃',
+          explicacion: '<p>También funciona sobre el riel horizontal.</p>',
+        },
+      ],
+    };
+
+    const res = await reproducirLeccion(LECCION, document.getElementById('app'), {});
+    console.log('resultado', res);
+    document.querySelector('.aviso').textContent = `Terminado: ${JSON.stringify(res)}`;
+  </script>
+</body>
+</html>

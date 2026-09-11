@@ -353,6 +353,260 @@ export function reproducirLeccion(leccion, contenedor, { alSalir } = {}) {
       pie.append(comprobar);
     }
 
+    /**
+     * Marca todas las correctas. Se corrige como conjunto: acertar tres de
+     * cuatro no es acertar, porque justamente se evalua saber donde parar.
+     */
+    function pintarMultiple(paso) {
+      const elegidas = new Set();
+      const lista = h('div', { class: 'opciones' });
+
+      const barajadas = paso.mezclar === false
+        ? paso.opciones.map((o, i) => ({ o, i }))
+        : mezclar(paso.opciones.map((o, i) => ({ o, i })));
+
+      barajadas.forEach(({ o, i }) => {
+        const btn = h('button', {
+          class: 'opcion marcable', type: 'button', dataset: { indice: String(i) },
+          'aria-pressed': 'false',
+          onClick: () => {
+            const activa = elegidas.has(i);
+            if (activa) elegidas.delete(i); else elegidas.add(i);
+            btn.classList.toggle('elegida', !activa);
+            btn.setAttribute('aria-pressed', String(!activa));
+            comprobar.disabled = elegidas.size === 0;
+          },
+        }, [h('span', { class: 'casilla' }), h('span', { html: typeof o === 'string' ? o : o.texto })]);
+        lista.appendChild(btn);
+      });
+
+      escena.append(h('div', { class: 'paso paso-preg' }, [
+        h('h2', { class: 'enunciado', html: paso.pregunta }),
+        h('p', { class: 'instruccion' }, ['Puede haber más de una correcta.']),
+        construirVisual(paso),
+        lista,
+      ]));
+
+      const comprobar = h('button', {
+        class: 'btn principal', disabled: 'true',
+        onClick: () => {
+          const esperadas = new Set(paso.correctas);
+          const ok = esperadas.size === elegidas.size && [...esperadas].every((i) => elegidas.has(i));
+          lista.querySelectorAll('.opcion').forEach((b) => {
+            b.disabled = true;
+            const i = Number(b.dataset.indice);
+            if (esperadas.has(i)) b.classList.add('correcta');
+            else if (elegidas.has(i)) b.classList.add('incorrecta');
+          });
+          const nombres = paso.correctas
+            .map((i) => (typeof paso.opciones[i] === 'string' ? paso.opciones[i] : paso.opciones[i].texto))
+            .map((x) => `<li>${x}</li>`).join('');
+          resolverPaso(paso, ok, {
+            titulo: ok ? (paso.elogio || '¡Todas!') : 'No es esa combinación',
+            detalle: ok ? (paso.explicacion || '')
+              : `<p class="respuesta-buena">Las correctas eran:</p><ul class="lista-errores">${nombres}</ul>${paso.explicacion || ''}`,
+          });
+        },
+      }, ['Comprobar']);
+      comprobar.disabled = true;
+      pie.append(comprobar);
+    }
+
+    /**
+     * Unir dos columnas. Se resuelve par a par y el error se avisa al instante,
+     * que es lo que hace que emparejar sirva para memorizar.
+     */
+    function pintarEmparejar(paso) {
+      const izq = mezclar(paso.pares.map((p, i) => ({ txt: p.a, i })));
+      const der = mezclar(paso.pares.map((p, i) => ({ txt: p.b, i })));
+      let selIzq = null;
+      let resueltos = 0;
+      let huboError = false;
+
+      const colIzq = h('div', { class: 'col-emparejar' });
+      const colDer = h('div', { class: 'col-emparejar' });
+
+      const limpiarSel = () => {
+        colIzq.querySelectorAll('.ficha').forEach((f) => f.classList.remove('elegida'));
+        selIzq = null;
+      };
+
+      const intentar = (fichaDer, indiceDer) => {
+        if (!selIzq) return;
+        const fichaIzq = selIzq.nodo;
+        if (selIzq.indice === indiceDer) {
+          [fichaIzq, fichaDer].forEach((f) => {
+            f.classList.remove('elegida');
+            f.classList.add('resuelta');
+            f.disabled = true;
+          });
+          // Las resueltas bajan al pie de su columna: las pendientes quedan
+          // arriba y, al terminar, cada par se lee en la misma fila.
+          colIzq.appendChild(fichaIzq);
+          colDer.appendChild(fichaDer);
+          resueltos++;
+          limpiarSel();
+          if (resueltos === paso.pares.length) {
+            resolverPaso(paso, !huboError, {
+              titulo: huboError ? 'Listo, pero con tropiezos' : (paso.elogio || '¡Todo emparejado!'),
+              detalle: paso.explicacion || '',
+            });
+          }
+        } else {
+          huboError = true;
+          [fichaIzq, fichaDer].forEach((f) => {
+            f.classList.add('falla');
+            setTimeout(() => f.classList.remove('falla'), 550);
+          });
+          limpiarSel();
+        }
+      };
+
+      izq.forEach(({ txt, i }) => {
+        const f = h('button', {
+          class: 'ficha', type: 'button',
+          onClick: () => {
+            if (f.classList.contains('resuelta')) return;
+            limpiarSel();
+            f.classList.add('elegida');
+            selIzq = { nodo: f, indice: i };
+          },
+        }, [h('span', { html: txt })]);
+        colIzq.appendChild(f);
+      });
+
+      der.forEach(({ txt, i }) => {
+        const f = h('button', {
+          class: 'ficha', type: 'button',
+          onClick: () => { if (!f.classList.contains('resuelta')) intentar(f, i); },
+        }, [h('span', { html: txt })]);
+        colDer.appendChild(f);
+      });
+
+      escena.append(h('div', { class: 'paso paso-emparejar' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        h('p', { class: 'instruccion' }, ['Toca uno de cada lado para unirlos.']),
+        h('div', { class: 'emparejar' }, [colIzq, colDer]),
+      ]));
+      // No hay boton: el paso se cierra solo al emparejarlo todo.
+    }
+
+    /**
+     * Ordenar una secuencia tocando en orden. Se usa click numerado en vez de
+     * arrastrar porque con el dedo el arrastre falla y aca lo evaluado es el
+     * orden, no la destreza.
+     */
+    function pintarOrdenar(paso) {
+      const barajados = mezclar(paso.pasos.map((txt, i) => ({ txt, i })));
+      const elegidos = [];
+
+      const lista = h('div', { class: 'opciones' });
+      barajados.forEach(({ txt, i }) => {
+        const btn = h('button', {
+          class: 'opcion ordenable', type: 'button', dataset: { indice: String(i) },
+          onClick: () => {
+            if (btn.classList.contains('puesta')) return;
+            elegidos.push(i);
+            btn.classList.add('puesta');
+            btn.querySelector('kbd').textContent = String(elegidos.length);
+            comprobar.disabled = elegidos.length !== paso.pasos.length;
+          },
+        }, [h('kbd', {}, ['·']), h('span', { html: txt })]);
+        lista.appendChild(btn);
+      });
+
+      const deshacer = h('button', {
+        class: 'btn secundario chico',
+        onClick: () => {
+          const ultimo = elegidos.pop();
+          if (ultimo === undefined) return;
+          const btn = lista.querySelector(`[data-indice="${ultimo}"]`);
+          btn.classList.remove('puesta');
+          btn.querySelector('kbd').textContent = '·';
+          comprobar.disabled = true;
+        },
+      }, ['Deshacer']);
+
+      escena.append(h('div', { class: 'paso paso-preg' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        h('p', { class: 'instruccion' }, ['Tócalos en el orden correcto.']),
+        construirVisual(paso),
+        lista,
+        deshacer,
+      ]));
+
+      const comprobar = h('button', {
+        class: 'btn principal', disabled: 'true',
+        onClick: () => {
+          const ok = elegidos.every((v, k) => v === k);
+          lista.querySelectorAll('.opcion').forEach((b) => {
+            b.disabled = true;
+            const i = Number(b.dataset.indice);
+            b.classList.add(elegidos[i] === i ? 'correcta' : 'incorrecta');
+          });
+          deshacer.disabled = true;
+          const bueno = paso.pasos.map((x, k) => `<li>${k + 1}. ${x}</li>`).join('');
+          resolverPaso(paso, ok, {
+            titulo: ok ? (paso.elogio || '¡Orden correcto!') : 'Ese no es el orden',
+            detalle: ok ? (paso.explicacion || '')
+              : `<p class="respuesta-buena">El orden era:</p><ul class="lista-errores">${bueno}</ul>${paso.explicacion || ''}`,
+          });
+        },
+      }, ['Comprobar']);
+      comprobar.disabled = true;
+      pie.append(comprobar);
+    }
+
+    /**
+     * Señalar un componente sobre el propio diagrama. Es el formato que mas se
+     * parece a leer un esquema de verdad: no hay alternativas que descarten por
+     * eliminacion, hay que mirar el circuito.
+     */
+    function pintarSenalar(paso) {
+      const bloque = h('div', { class: 'paso paso-senalar' }, [
+        h('h2', { class: 'enunciado', html: paso.enunciado }),
+        h('p', { class: 'instruccion' }, ['Toca el componente en el diagrama.']),
+        construirVisual(paso),
+      ]);
+      escena.append(bloque);
+
+      let elegido = null;
+      const comps = [...bloque.querySelectorAll('[data-comp]')];
+      const marcar = (g) => {
+        comps.forEach((c) => c.classList.remove('cz-elegido'));
+        g.classList.add('cz-elegido');
+        elegido = g.dataset.comp;
+        comprobar.disabled = false;
+      };
+      comps.forEach((g) => {
+        g.addEventListener('click', () => marcar(g));
+        g.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); marcar(g); }
+        });
+      });
+
+      const comprobar = h('button', {
+        class: 'btn principal', disabled: 'true',
+        onClick: () => {
+          const ok = elegido === paso.correcta;
+          comps.forEach((g) => {
+            g.classList.remove('cz-elegido');
+            g.style.pointerEvents = 'none';
+            if (g.dataset.comp === paso.correcta) g.classList.add('cz-ok');
+            else if (g.dataset.comp === elegido) g.classList.add('cz-mal');
+          });
+          comprobar.disabled = true;
+          resolverPaso(paso, ok, {
+            titulo: ok ? (paso.elogio || '¡Ese es!') : 'No es ese',
+            detalle: ok ? (paso.explicacion || '')
+              : `<p class="respuesta-buena">Era <b>${paso.nombreCorrecto || paso.correcta}</b>.</p>${paso.explicacion || ''}`,
+          });
+        },
+      }, ['Comprobar']);
+      comprobar.disabled = true;
+      pie.append(comprobar);
+    }
+
     // ── Bucle principal ──
 
     function siguiente() {
@@ -377,6 +631,10 @@ export function reproducirLeccion(leccion, contenedor, { alSalir } = {}) {
         alternativas: pintarAlternativas,
         completar: pintarCompletar,
         entrada: pintarEntrada,
+        multiple: pintarMultiple,
+        emparejar: pintarEmparejar,
+        ordenar: pintarOrdenar,
+        senalar: pintarSenalar,
       };
       (pintores[paso.tipo] || pintarInfo)(paso);
       escena.scrollTop = 0;

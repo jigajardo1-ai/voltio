@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voltio · validación de contenido</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <style>
+    body { padding: 24px; max-width: 900px; margin: 0 auto; }
+    #resumen { font: 800 1.15rem var(--fuente); padding: 14px 18px; border-radius: 12px; margin-bottom: 18px; }
+    #resumen.ok { background: var(--ok-suave); color: var(--ok-osc); }
+    #resumen.mal { background: var(--mal-suave); color: var(--mal-osc); }
+    #fallos li { font-family: var(--mono); font-size: .85rem; margin: 5px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--borde); font-size: .9rem; }
+    th { font: 700 .75rem var(--fuente); text-transform: uppercase; letter-spacing: .05em; color: var(--texto-suave); }
+    td.num { font-family: var(--mono); text-align: right; }
+  </style>
+</head>
+<body>
+  <h1>Validación de contenido</h1>
+  <p class="prosa">Revisa todas las lecciones sin abrirlas una por una: índices de respuesta fuera
+     de rango, huecos declarados en el circuito que nadie corrige, <code>senalar</code> apuntando a
+     un <code>id</code> que no existe. Son los errores fáciles de cometer al escribir contenido
+     nuevo, y en la app solo se notan al llegar al paso.</p>
+  <div id="resumen"></div>
+  <ul id="fallos"></ul>
+  <table><thead><tr><th>Módulo</th><th>Lección</th><th class="num">Pasos</th><th>Formatos usados</th></tr></thead>
+    <tbody id="tabla"></tbody></table>
+
+  <script type="module">
+    const t = Date.now();
+    const mods = [];
+    for (const f of ['01-fundamentos', '02-serie-paralelo', '03-inductores', '04-capacitores', '05-laplace']) {
+      mods.push((await import(`../lecciones/${f}.js?t=${t}`)).default);
+    }
+
+    const fallos = [];
+    const filas = [];
+
+    /** Recoge los ids de hueco y de componente que declara un spec de circuito. */
+    function idsDelCircuito(c) {
+      if (!c) return { huecos: [], comps: [] };
+      const ramas = [...(c.ramas || []), ...(c.serie || []), ...(c.paralelo || [])];
+      const huecos = ramas.filter((r) => r.hueco).map((r) => r.hueco.id);
+      if (c.fuente?.hueco) huecos.push(c.fuente.hueco.id);
+      return { huecos, comps: ramas.filter((r) => r.id).map((r) => r.id) };
+    }
+
+    for (const mod of mods) {
+      for (const lec of mod.lecciones) {
+        const usados = new Set();
+        lec.pasos.forEach((paso, k) => {
+          const donde = `${mod.id}/${lec.id}[${k}] ${paso.tipo}`;
+          usados.add(paso.tipo);
+          const { huecos, comps } = idsDelCircuito(paso.circuito);
+
+          if (paso.tipo === 'alternativas') {
+            if (!Array.isArray(paso.opciones) || paso.opciones.length < 2) fallos.push(`${donde}: faltan opciones`);
+            else if (!(paso.correcta >= 0 && paso.correcta < paso.opciones.length)) {
+              fallos.push(`${donde}: 'correcta'=${paso.correcta} fuera de rango (0..${paso.opciones.length - 1})`);
+            }
+          }
+
+          if (paso.tipo === 'multiple') {
+            if (!Array.isArray(paso.correctas) || !paso.correctas.length) fallos.push(`${donde}: 'correctas' vacio`);
+            else {
+              for (const i of paso.correctas) {
+                if (!(i >= 0 && i < paso.opciones.length)) fallos.push(`${donde}: indice ${i} fuera de rango`);
+              }
+              if (new Set(paso.correctas).size !== paso.correctas.length) fallos.push(`${donde}: 'correctas' repite indices`);
+              if (paso.correctas.length === paso.opciones.length) fallos.push(`${donde}: todas las opciones son correctas`);
+            }
+          }
+
+          if (paso.tipo === 'entrada') {
+            if (!Number.isFinite(paso.respuesta)) fallos.push(`${donde}: 'respuesta' no es un numero`);
+            if (!paso.unidad) fallos.push(`${donde}: sin 'unidad'`);
+          }
+
+          if (paso.tipo === 'completar') {
+            const declarados = (paso.huecos || []).map((x) => x.id);
+            for (const id of huecos) {
+              if (!declarados.includes(id)) fallos.push(`${donde}: hueco '${id}' en el circuito sin respuesta en 'huecos'`);
+            }
+            for (const id of declarados) {
+              if (!huecos.includes(id)) fallos.push(`${donde}: 'huecos' declara '${id}', que no existe en el circuito`);
+            }
+            for (const hk of (paso.huecos || [])) {
+              if (!Number.isFinite(hk.respuesta)) fallos.push(`${donde}: hueco '${hk.id}' sin respuesta numerica`);
+            }
+          }
+
+          if (paso.tipo === 'senalar') {
+            if (!comps.length) fallos.push(`${donde}: ningun componente del circuito tiene 'id'`);
+            else if (!comps.includes(paso.correcta)) {
+              fallos.push(`${donde}: 'correcta'="${paso.correcta}" no esta entre [${comps.join(', ')}]`);
+            }
+          }
+
+          if (paso.tipo === 'emparejar') {
+            if (!paso.pares?.length) fallos.push(`${donde}: sin pares`);
+            else if (paso.pares.some((p) => !p.a || !p.b)) fallos.push(`${donde}: hay un par incompleto`);
+          }
+
+          if (paso.tipo === 'ordenar' && (!paso.pasos || paso.pasos.length < 2)) {
+            fallos.push(`${donde}: 'pasos' necesita al menos dos elementos`);
+          }
+
+          // Un circuito con componentes marcados fuera de un paso 'senalar' no
+          // rompe nada, pero los vuelve clicables sin razon.
+          if (comps.length && paso.tipo !== 'senalar') {
+            fallos.push(`${donde}: el circuito trae ids (${comps.join(', ')}) pero el paso no es 'senalar'`);
+          }
+        });
+
+        filas.push({ mod: mod.titulo, lec: lec.titulo, n: lec.pasos.length, tipos: [...usados].join(', ') });
+      }
+    }
+
+    const res = document.getElementById('resumen');
+    const total = filas.reduce((a, f) => a + f.n, 0);
+    res.className = fallos.length ? 'mal' : 'ok';
+    res.textContent = fallos.length
+      ? `${fallos.length} problema(s) de contenido`
+      : `${total} pasos en ${filas.length} lecciones, sin problemas`;
+    document.getElementById('fallos').innerHTML = fallos.map((f) => `<li>${f}</li>`).join('');
+    document.getElementById('tabla').innerHTML = filas
+      .map((f) => `<tr><td>${f.mod}</td><td>${f.lec}</td><td class="num">${f.n}</td><td>${f.tipos}</td></tr>`)
+      .join('');
+
+    window.resultado = { total, lecciones: filas.length, fallos };
+  </script>
+</body>
+</html>

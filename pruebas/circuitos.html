@@ -22,7 +22,13 @@
   <div class="rejilla" id="rejilla"></div>
 
   <script type="module">
-    import { construirCircuito } from '../js/circuito.js';
+    {
+      const hoja = document.querySelector('link[rel="stylesheet"]');
+      hoja.href = `../css/app.css?t=${Date.now()}`;
+    }
+    // Import con marca de tiempo: el modulo cacheado hace creer que un arreglo
+    // no funciono.
+    const { construirCircuito } = await import(`../js/circuito.js?t=${Date.now()}`);
 
     const casos = [
       ['Serie · 1 R', { tipo: 'serie', fuente: { etiqueta: '9 V' },

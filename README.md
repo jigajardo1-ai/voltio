@@ -42,7 +42,10 @@ lecciones/
   04-capacitores.js     Esqueleto
   05-laplace.js         Esqueleto
 pruebas/
-  circuitos.html        Banco visual: detecta desbordes y etiquetas encimadas
+  contenido.html        Valida todas las lecciones (lo primero al escribir contenido)
+  circuitos.html        Banco visual de circuitos: desbordes y etiquetas encimadas
+  figuras.html          Banco visual de las animaciones
+  formatos.html         Lección sintética con un paso de cada tipo
   parser.html           Casos del parser de respuestas numéricas
 build.py                Empaqueta todo en un archivo único
 ```
@@ -69,9 +72,25 @@ Tipos disponibles:
 | tipo | para qué sirve | campos propios |
 |---|---|---|
 | `info` | teoría, definiciones, animaciones | `titulo`, `cuerpo`, `emoji`, `textoBoton` |
-| `alternativas` | opción múltiple | `pregunta`, `opciones`, `correcta`, `explicacion` |
+| `alternativas` | una sola correcta | `pregunta`, `opciones`, `correcta`, `explicacion` |
+| `multiple` | varias correctas a la vez | `pregunta`, `opciones`, `correctas` (array) |
 | `entrada` | respuesta numérica libre | `enunciado`, `respuesta`, `unidad`, `tolerancia` |
 | `completar` | rellenar valores en el circuito | `enunciado`, `huecos`, `solucion` |
+| `emparejar` | unir dos columnas | `enunciado`, `pares` (`{a, b}`) |
+| `ordenar` | poner una secuencia en orden | `enunciado`, `pasos` (ya en orden correcto) |
+| `senalar` | tocar un componente del diagrama | `enunciado`, `circuito` con `id`, `correcta`, `nombreCorrecto` |
+
+Notas de cada formato:
+
+- `multiple` se corrige **como conjunto**: sobra una o falta una y cuenta como error. No
+  pongas todas las opciones como correctas.
+- `emparejar` no lleva botón: se cierra solo al unir todos los pares, y corrige al instante.
+- `ordenar` se responde tocando en orden, no arrastrando (con el dedo el arrastre falla y
+  lo evaluado es el orden, no la destreza). El array `pasos` va **en el orden correcto**;
+  la app los baraja.
+- `senalar` necesita que las ramas del circuito lleven `id`, y `correcta` debe coincidir con
+  uno de ellos. Solo pon `id` en circuitos de pasos `senalar`: en otros los vuelve clicables
+  sin razón, y el validador lo marca.
 
 Todos aceptan además `circuito` (spec declarativo) o `visual` (función que devuelve un nodo),
 y `pista` con una ayuda plegable.
@@ -101,18 +120,23 @@ Un módulo nuevo se registra en el array `MODULOS` de `js/app.js`.
 
 ## Pruebas
 
-No hay runner: son dos páginas que se abren en el navegador con el servidor levantado.
+No hay runner: son páginas que se abren en el navegador con el servidor levantado. Todas
+importan los módulos con marca de tiempo, así que no hace falta vaciar la caché al iterar.
 
-- `/pruebas/parser.html` — la tabla queda verde si el parser numérico está sano.
-- `/pruebas/circuitos.html` — dibuja todas las topologías con el `viewBox` marcado.
-  En consola, `desbordes()` lista lo que se sale del lienzo y `colisiones()` los rótulos
-  que se pisan. Ambas deben devolver `[]`.
+| página | qué comprueba |
+|---|---|
+| `/pruebas/contenido.html` | Todas las lecciones: índices de respuesta fuera de rango, huecos sin corrección, `senalar` apuntando a un `id` inexistente. **Es la que conviene mirar al escribir contenido.** |
+| `/pruebas/parser.html` | El parser numérico acepta `350`, `350 Ω`, `0,35k`, `2k2`… |
+| `/pruebas/circuitos.html` | Dibuja las topologías con el `viewBox` marcado. En consola, `desbordes()` y `colisiones()` deben devolver `[]`. |
+| `/pruebas/figuras.html` | Lo mismo para las animaciones. Trae un informe visible arriba, y comprueba aparte que el halo de la ampolleta (que lleva blur, invisible a `getBBox`) quepa en el lienzo. |
+| `/pruebas/formatos.html` | Lección sintética con un paso de cada tipo, para probar los formatos sin avanzar por el curso. |
 
-Conviene mirarlas después de tocar `circuito.js` o `motor.js`.
+Después de tocar `circuito.js` o `visuales.js`, mira los dos bancos visuales; después de
+escribir lecciones, el validador de contenido.
 
 ## Estado
 
-- **Listo:** fundamentos (4 lecciones) y serie/paralelo (4 lecciones), con XP, racha,
-  vidas, estrellas y progreso guardado en el navegador.
+- **Listo:** fundamentos (5 lecciones, incluida potencia) y serie/paralelo (4 lecciones):
+  72 pasos en total, con XP, racha, vidas, estrellas y progreso guardado en el navegador.
 - **Por escribir:** inductores, capacitores y Laplace. El temario de cada uno ya está en
   su archivo; falta convertirlo en pasos.

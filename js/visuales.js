@@ -4,7 +4,7 @@
 // es que el visual tiene que mostrar el mecanismo, no decorar: si el usuario
 // mueve algo, la magnitud fisica que cambia se ve cambiar.
 
-import { svgEl as s, svgTxt as t, electrones, defsFlecha } from './circuito.js';
+import { svgEl as s, svgTxt as t, electrones, defsFlecha, cable, zigzag } from './circuito.js';
 import { h, formatear } from './motor.js';
 
 // ── Analogia hidraulica ─────────────────────────────────────────────────────
@@ -36,7 +36,8 @@ export function analogiaHidraulica(resaltar = null) {
   // Canieria con agua corriendo = corriente.
   const gC = s('g', { class: 'viz-g' + marca('corriente') });
   gC.appendChild(s('path', { d: 'M72 144 L72 186 L420 186', class: 'viz-tubo' }));
-  gC.appendChild(electrones('M72 150 L72 186 L420 186', { cantidad: 7, dur: 3 }));
+  gC.appendChild(electrones('M72 150 L72 186 L420 186',
+    { cantidad: 7, dur: 3, clase: 'viz-gota', radio: 5 }));
   gC.appendChild(s('text', { x: 300, y: 214, 'text-anchor': 'middle', class: 'viz-rot' },
     [t('caudal = corriente')]));
   svg.appendChild(gC);
@@ -92,44 +93,55 @@ export function trianguloOhm(tapada = null) {
  * formula y pasa a ser una intuicion.
  */
 export function laboratorioOhm({ v0 = 9, r0 = 100 } = {}) {
-  const svg = s('svg', { viewBox: '0 0 420 220', class: 'viz viz-lab', role: 'img',
-    'aria-label': 'Circuito con fuente variable y ampolleta' });
+  // El halo de la ampolleta lleva blur(9px), que se extiende unos 27 px mas alla
+  // de su radio. El riel superior va suficientemente abajo para que quepa entero.
+  const W = 470, H = 250;
+  const yT = 76, yB = 210, xL = 60, xR = 380;
+  const cyF = (yT + yB) / 2;
+  const cxAmp = 220;
+
+  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'viz viz-lab', role: 'img',
+    'aria-label': 'Circuito con fuente y resistencia variables alimentando una ampolleta' });
   svg.appendChild(defsFlecha());
 
-  // Malla: fuente izquierda, ampolleta arriba, resistencia derecha.
-  svg.appendChild(s('polyline', { points: '60,84 60,40 190,40', class: 'cz-cable' }));
-  svg.appendChild(s('polyline', { points: '250,40 360,40 360,180 60,180 60,136', class: 'cz-cable' }));
+  // Malla: fuente a la izquierda, ampolleta arriba, resistencia a la derecha.
+  svg.appendChild(s('polyline', { points: `${xL},${cyF - 23} ${xL},${yT} ${cxAmp - 30},${yT}`, class: 'cz-cable' }));
+  svg.appendChild(s('polyline', {
+    points: `${cxAmp + 30},${yT} ${xR},${yT} ${xR},${yB} ${xL},${yB} ${xL},${cyF + 23}`,
+    class: 'cz-cable',
+  }));
 
   // Fuente
-  svg.appendChild(s('line', { x1: 43, y1: 102, x2: 77, y2: 102, class: 'cz-barra-larga' }));
-  svg.appendChild(s('line', { x1: 52, y1: 118, x2: 68, y2: 118, class: 'cz-barra-corta' }));
-  const etqV = s('text', { x: 34, y: 114, 'text-anchor': 'end', class: 'cz-valor' }, [t('')]);
+  svg.appendChild(s('line', { x1: xL - 17, y1: cyF - 8, x2: xL + 17, y2: cyF - 8, class: 'cz-barra-larga' }));
+  svg.appendChild(s('line', { x1: xL - 8, y1: cyF + 8, x2: xL + 8, y2: cyF + 8, class: 'cz-barra-corta' }));
+  const etqV = s('text', { x: xL - 24, y: cyF + 5, 'text-anchor': 'end', class: 'cz-valor' }, [t('')]);
   svg.appendChild(etqV);
 
   // Ampolleta
-  const halo = s('circle', { cx: 220, cy: 40, r: 34, class: 'viz-halo' });
+  const halo = s('circle', { cx: cxAmp, cy: yT, r: 34, class: 'viz-halo' });
   svg.appendChild(halo);
-  const bulbo = s('circle', { cx: 220, cy: 40, r: 21, class: 'viz-bulbo' });
+  const bulbo = s('circle', { cx: cxAmp, cy: yT, r: 21, class: 'viz-bulbo' });
   svg.appendChild(bulbo);
-  svg.appendChild(s('path', { d: 'M209 40 q5.5 -11 11 0 q5.5 11 11 0', class: 'viz-filamento' }));
-  svg.appendChild(s('line', { x1: 190, y1: 40, x2: 199, y2: 40, class: 'cz-cable' }));
-  svg.appendChild(s('line', { x1: 241, y1: 40, x2: 250, y2: 40, class: 'cz-cable' }));
+  svg.appendChild(s('path', {
+    d: `M${cxAmp - 11} ${yT} q5.5 -11 11 0 q5.5 11 11 0`, class: 'viz-filamento',
+  }));
+  svg.appendChild(s('line', { x1: cxAmp - 30, y1: yT, x2: cxAmp - 21, y2: yT, class: 'cz-cable' }));
+  svg.appendChild(s('line', { x1: cxAmp + 21, y1: yT, x2: cxAmp + 30, y2: yT, class: 'cz-cable' }));
 
   // Resistencia (rama derecha, vertical)
-  const zig = s('path', { class: 'cz-zig' });
-  const pts = [];
-  const largo = 66, amp = 11, n = 6, paso = largo / n, ini = 110 - largo / 2;
-  pts.push([360, ini]);
-  for (let i = 0; i < n; i++) pts.push([360 + (i % 2 === 0 ? -1 : 1) * amp, ini + paso * (i + 0.5)]);
-  pts.push([360, ini + largo]);
-  zig.setAttribute('d', pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' '));
-  svg.appendChild(s('rect', { x: 354, y: 74, width: 12, height: 72, class: 'cz-tapa' }));
-  svg.appendChild(zig);
-  const etqR = s('text', { x: 384, y: 114, class: 'cz-valor' }, [t('')]);
+  const largo = 66, amp = 11, n = 6, paso = largo / n, ini = cyF - largo / 2;
+  const pts = [[xR, ini]];
+  for (let i = 0; i < n; i++) pts.push([xR + (i % 2 === 0 ? -1 : 1) * amp, ini + paso * (i + 0.5)]);
+  pts.push([xR, ini + largo]);
+  svg.appendChild(s('rect', { x: xR - 6, y: ini - 6, width: 12, height: largo + 12, class: 'cz-tapa' }));
+  svg.appendChild(s('path', {
+    d: pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' '), class: 'cz-zig',
+  }));
+  const etqR = s('text', { x: xR + 24, y: cyF + 5, class: 'cz-valor' }, [t('')]);
   svg.appendChild(etqR);
 
   // Electrones: su velocidad es la corriente.
-  const loop = 'M60 84 L60 40 L360 40 L360 180 L60 180 L60 136';
+  const loop = `M${xL} ${cyF - 23} L${xL} ${yT} L${xR} ${yT} L${xR} ${yB} L${xL} ${yB} L${xL} ${cyF + 23}`;
   let capaE = electrones(loop, { cantidad: 9, dur: 4 });
   svg.appendChild(capaE);
 
@@ -217,30 +229,83 @@ export function seccionConductor() {
 
 // ── Serie vs paralelo, lado a lado ──────────────────────────────────────────
 
-/** Un solo camino contra varios: la diferencia se ve en el flujo, no en la formula. */
+/**
+ * Un solo camino contra varios.
+ *
+ * Se dibuja con el mismo lenguaje que los circuitos de los ejercicios —cable
+ * gris, zigzag, electrones ambar— y no con formas abstractas: la comparacion
+ * solo sirve si el alumno reconoce aqui lo mismo que va a ver despues.
+ */
 export function serieVsParalelo() {
-  const svg = s('svg', { viewBox: '0 0 480 250', class: 'viz', role: 'img',
-    'aria-label': 'Comparacion entre conexion serie y paralelo' });
+  const W = 520, H = 250;
+  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'viz', role: 'img',
+    'aria-label': 'Comparacion entre una conexion serie y una paralelo' });
 
-  // Serie: un camino, todos los electrones pasan por lo mismo.
-  svg.appendChild(s('text', { x: 118, y: 24, 'text-anchor': 'middle', class: 'viz-titulo' }, [t('SERIE')]));
-  svg.appendChild(s('rect', { x: 40, y: 46, width: 156, height: 150, rx: 10, class: 'viz-marco' }));
-  svg.appendChild(electrones('M48 54 L188 54 L188 188 L48 188 Z', { cantidad: 6, dur: 5 }));
-  [96, 140].forEach((y, i) => {
-    svg.appendChild(s('rect', { x: 182, y: y - 16, width: 12, height: 32, class: 'viz-obst' }));
-    svg.appendChild(s('text', { x: 168, y: y + 5, 'text-anchor': 'end', class: 'viz-rot' }, [t(`R${i + 1}`)]));
+  const yT = 74, yB = 188;
+  const cyF = (yT + yB) / 2;
+
+  /** Media fuente: solo las dos barras, sin etiqueta de valor. */
+  const pila = (cx) => {
+    const g = s('g', {});
+    g.appendChild(s('line', { x1: cx - 15, y1: cyF - 7, x2: cx + 15, y2: cyF - 7, class: 'cz-barra-larga' }));
+    g.appendChild(s('line', { x1: cx - 7, y1: cyF + 7, x2: cx + 7, y2: cyF + 7, class: 'cz-barra-corta' }));
+    return g;
+  };
+
+  // ── Serie: un lazo, y todo lo que circula pasa por las dos resistencias ──
+  const sL = 40, sR = 214;
+  svg.appendChild(s('text', { x: (sL + sR) / 2, y: 34, 'text-anchor': 'middle', class: 'viz-titulo' },
+    [t('SERIE')]));
+  svg.appendChild(cable([[sL, cyF - 22], [sL, yT], [sR, yT]]));
+  svg.appendChild(cable([[sR, yT], [sR, yB], [sL, yB], [sL, cyF + 22]]));
+  svg.appendChild(pila(sL));
+
+  const pasoS = (sR - sL) / 3;
+  [1, 2].forEach((k) => {
+    const cx = sL + pasoS * k;
+    svg.appendChild(s('rect', { x: cx - 20, y: yT - 6, width: 40, height: 12, class: 'cz-tapa' }));
+    svg.appendChild(zigzag(cx, yT, 34, false, 9));
+    svg.appendChild(s('text', { x: cx, y: yT - 16, 'text-anchor': 'middle', class: 'viz-rot' },
+      [t(`R${k === 1 ? '₁' : '₂'}`)]));
   });
-  svg.appendChild(s('text', { x: 118, y: 220, 'text-anchor': 'middle', class: 'viz-rot' },
+
+  svg.appendChild(electrones(
+    `M${sL} ${cyF - 22} L${sL} ${yT} L${sR} ${yT} L${sR} ${yB} L${sL} ${yB} L${sL} ${cyF + 22}`,
+    { cantidad: 7, dur: 5 }));
+  svg.appendChild(s('text', { x: (sL + sR) / 2, y: 220, 'text-anchor': 'middle', class: 'viz-rot' },
     [t('misma I, se suman las R')]));
 
-  // Paralelo: el flujo se reparte.
-  svg.appendChild(s('text', { x: 362, y: 24, 'text-anchor': 'middle', class: 'viz-titulo' }, [t('PARALELO')]));
-  svg.appendChild(s('rect', { x: 284, y: 46, width: 156, height: 150, rx: 10, class: 'viz-marco' }));
-  svg.appendChild(electrones('M292 54 L432 54 L432 188 L292 188 Z', { cantidad: 6, dur: 3.2 }));
-  svg.appendChild(electrones('M292 54 L362 54 L362 188 L292 188 Z', { cantidad: 4, dur: 2.4 }));
-  svg.appendChild(s('rect', { x: 356, y: 105, width: 12, height: 32, class: 'viz-obst' }));
-  svg.appendChild(s('rect', { x: 426, y: 105, width: 12, height: 32, class: 'viz-obst' }));
-  svg.appendChild(s('text', { x: 362, y: 220, 'text-anchor': 'middle', class: 'viz-rot' },
+  // ── Paralelo: dos ramas, y el flujo se reparte entre ellas ──
+  const pL = 306, pR = 480;
+  svg.appendChild(s('text', { x: (pL + pR) / 2, y: 34, 'text-anchor': 'middle', class: 'viz-titulo' },
+    [t('PARALELO')]));
+  const ramas = [pL + 76, pR];
+  svg.appendChild(cable([[pL, cyF - 22], [pL, yT], [pR, yT]]));
+  svg.appendChild(cable([[pL, cyF + 22], [pL, yB], [pR, yB]]));
+  svg.appendChild(pila(pL));
+
+  ramas.forEach((x, i) => {
+    svg.appendChild(cable([[x, yT], [x, yB]]));
+    svg.appendChild(s('rect', { x: x - 6, y: cyF - 20, width: 12, height: 40, class: 'cz-tapa' }));
+    svg.appendChild(zigzag(x, cyF, 34, true, 9));
+    svg.appendChild(s('text', {
+      x: i === 0 ? x - 14 : x + 14, y: cyF + 4,
+      'text-anchor': i === 0 ? 'end' : 'start', class: 'viz-rot',
+    }, [t(i === 0 ? 'R₁' : 'R₂')]));
+  });
+
+  // Dos recorridos distintos: el que se desvia por la primera rama va mas
+  // rapido y lleva mas puntos, porque por ahi pasa mas corriente.
+  svg.appendChild(electrones(
+    `M${pL} ${cyF - 22} L${pL} ${yT} L${ramas[0]} ${yT} L${ramas[0]} ${yB} L${pL} ${yB} L${pL} ${cyF + 22}`,
+    { cantidad: 5, dur: 3 }));
+  svg.appendChild(electrones(
+    `M${pL} ${cyF - 22} L${pL} ${yT} L${ramas[1]} ${yT} L${ramas[1]} ${yB} L${pL} ${yB} L${pL} ${cyF + 22}`,
+    { cantidad: 6, dur: 4.2 }));
+  svg.appendChild(s('circle', { cx: ramas[0], cy: yT, r: 4, class: 'cz-nodo' }));
+  svg.appendChild(s('circle', { cx: ramas[0], cy: yB, r: 4, class: 'cz-nodo' }));
+
+  svg.appendChild(s('text', { x: (pL + pR) / 2, y: 220, 'text-anchor': 'middle', class: 'viz-rot' },
     [t('mismo V, se reparte la I')]));
   return svg;
 }
@@ -259,8 +324,16 @@ export function barrasDivisor(v, r1, r2) {
   const barra = (y, ancho, texto, clase) => {
     const g = s('g', {});
     g.appendChild(s('rect', { x: 30, y, width: ancho, height: 38, rx: 8, class: `viz-barra ${clase}` }));
-    g.appendChild(s('text', { x: 30 + ancho / 2, y: y + 25, 'text-anchor': 'middle', class: 'viz-barra-txt' },
-      [t(texto)]));
+    // Con repartos muy desiguales la barra chica no alcanza para su propio
+    // rotulo: entonces el texto se escribe al lado, en color de texto normal.
+    const anchoTexto = texto.length * 8.2;
+    const cabeDentro = ancho >= anchoTexto + 14;
+    g.appendChild(s('text', {
+      x: cabeDentro ? 30 + ancho / 2 : 30 + ancho + 10,
+      y: y + 25,
+      'text-anchor': cabeDentro ? 'middle' : 'start',
+      class: cabeDentro ? 'viz-barra-txt' : 'viz-barra-txt fuera',
+    }, [t(texto)]));
     return g;
   };
   svg.appendChild(s('text', { x: 30, y: 22, class: 'viz-rot' }, [t(`Fuente: ${v} V`)]));

@@ -308,6 +308,69 @@ button:disabled { cursor: not-allowed; }
 .opcion.incorrecta { border-color: var(--mal); background: var(--mal-suave); box-shadow: 0 3px 0 var(--mal); }
 .opcion:disabled { cursor: default; opacity: 1; }
 
+/* Instruccion de formato: dice como se responde, no que se pregunta. */
+.instruccion {
+  color: var(--texto-suave); font-size: .88rem; margin: -8px 0 14px;
+}
+
+/* Seleccion multiple: casilla visible, porque "marca todas" necesita que se
+   note que se puede marcar mas de una. */
+.opcion.marcable .casilla {
+  flex: none; width: 22px; height: 22px; border-radius: 6px;
+  border: 2px solid var(--borde-fuerte); position: relative;
+}
+.opcion.marcable.elegida .casilla { background: var(--azul); border-color: var(--azul); }
+.opcion.marcable.elegida .casilla::after {
+  content: "✓"; position: absolute; inset: 0; color: #fff;
+  font-size: .8rem; font-weight: 900; display: grid; place-items: center;
+}
+.opcion.marcable.correcta .casilla { background: var(--ok); border-color: var(--ok); }
+.opcion.marcable.incorrecta .casilla { background: var(--mal); border-color: var(--mal); }
+
+/* Ordenar: el numero aparece al tocar, y ese es todo el feedback que hace falta. */
+.opcion.ordenable kbd { transition: background .15s, color .15s; }
+.opcion.puesta { border-color: var(--azul); background: color-mix(in srgb, var(--azul) 8%, var(--superficie)); }
+.opcion.puesta kbd { background: var(--azul); border-color: var(--azul); color: #fff; }
+.btn.chico { padding: 8px 16px; font-size: .85rem; margin-top: 12px; }
+
+/* Emparejar: dos columnas de fichas que se van fijando al acertar. */
+.emparejar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.col-emparejar { display: grid; gap: 10px; align-content: start; }
+.ficha {
+  background: var(--superficie); border: 2px solid var(--borde);
+  box-shadow: 0 3px 0 var(--borde); border-radius: 12px;
+  padding: 13px 14px; text-align: center; font-weight: 600;
+  transition: transform .08s, border-color .15s, opacity .25s;
+}
+.ficha:hover:not(:disabled) { border-color: var(--borde-fuerte); }
+.ficha:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 var(--borde); }
+.ficha.elegida { border-color: var(--azul); background: color-mix(in srgb, var(--azul) 10%, var(--superficie)); box-shadow: 0 3px 0 var(--azul); }
+.ficha.resuelta { border-color: var(--ok); background: var(--ok-suave); box-shadow: none; opacity: .55; cursor: default; }
+.ficha.falla { border-color: var(--mal); background: var(--mal-suave); animation: temblor .4s; }
+@keyframes temblor {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Senalar sobre el diagrama */
+.cz-senalable { cursor: pointer; }
+.cz-golpe { fill: transparent; }
+.cz-senalable:hover .cz-zig { stroke: var(--azul); }
+.cz-senalable:hover .cz-golpe { fill: color-mix(in srgb, var(--azul) 12%, transparent); }
+.cz-senalable:focus-visible { outline: none; }
+.cz-senalable:focus-visible .cz-golpe { fill: color-mix(in srgb, var(--azul) 18%, transparent); stroke: var(--azul); stroke-width: 2; }
+.cz-senalable.cz-elegido .cz-zig { stroke: var(--azul); stroke-width: 3.6; }
+.cz-senalable.cz-elegido .cz-golpe { fill: color-mix(in srgb, var(--azul) 18%, transparent); }
+.cz-senalable.cz-ok .cz-zig { stroke: var(--ok); stroke-width: 3.6; }
+.cz-senalable.cz-ok .cz-golpe { fill: color-mix(in srgb, var(--ok) 20%, transparent); }
+.cz-senalable.cz-ok .cz-nombre { fill: var(--ok-osc); }
+.cz-senalable.cz-mal .cz-zig { stroke: var(--mal); stroke-width: 3.6; }
+.cz-senalable.cz-mal .cz-golpe { fill: color-mix(in srgb, var(--mal) 20%, transparent); }
+.cz-senalable.cz-mal .cz-nombre { fill: var(--mal-osc); }
+
 /* Entradas numericas */
 .campo-unidad { display: flex; align-items: center; gap: 10px; justify-content: center; margin: 6px 0 16px; }
 .entrada-grande {
@@ -332,6 +395,8 @@ button:disabled { cursor: not-allowed; }
   border-top: 1px solid var(--borde);
   background: var(--superficie);
 }
+/* Emparejar no usa boton: sin esto el pie deja una franja vacia. */
+.lec-pie:empty { display: none; }
 .lec-pie > * { max-width: 740px; }
 .lec-pie:not(.ok):not(.mal) { justify-content: center; }
 .lec-pie.ok  { background: var(--ok-suave); border-top-color: var(--ok); }
@@ -418,6 +483,9 @@ button:disabled { cursor: not-allowed; }
 .viz-g.atenua { opacity: .32; }
 .viz-g.resalta .viz-rot { fill: var(--marca-osc); font-weight: 800; }
 
+/* En la analogia hidraulica lo que circula es agua, no carga: el ambar de
+   los electrones haria pensar que el dibujo ya es el circuito. */
+.viz-gota { fill: var(--azul); opacity: .85; }
 .viz-tanque { fill: none; stroke: var(--cable); stroke-width: 2.6; }
 .viz-agua-fill { fill: color-mix(in srgb, var(--azul) 42%, transparent); }
 .viz-tubo { fill: none; stroke: var(--borde-fuerte); stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
@@ -443,6 +511,9 @@ button:disabled { cursor: not-allowed; }
 .viz-barra { fill: var(--azul); }
 .viz-barra.b2 { fill: var(--violeta); }
 .viz-barra-txt { font: 800 14px var(--fuente); fill: #fff; }
+/* Cuando el reparto es muy desigual el rotulo no cabe dentro de la barra
+   y se escribe al lado, donde necesita el color de texto normal. */
+.viz-barra-txt.fuera { fill: var(--texto); }
 
 .lab { display: flex; flex-direction: column; gap: 12px; }
 .lab-lecturas { display: flex; gap: 12px; justify-content: center; }
@@ -478,6 +549,8 @@ button:disabled { cursor: not-allowed; }
   .lec-pie { flex-direction: column; align-items: stretch; }
   .lec-pie .btn { margin-left: 0; width: 100%; }
   .mod-prog { min-width: 62px; }
+  .emparejar { gap: 8px; }
+  .ficha { padding: 11px 8px; font-size: .9rem; }
   .stats { gap: 10px; }
 }
 

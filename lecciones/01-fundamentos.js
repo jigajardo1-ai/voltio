@@ -77,6 +77,29 @@ export default {
           pista: '<p>Pasa todo a unidades base: 250 ms = 0.25 s. Después, I = Q/t.</p>',
           solucion: '<p>I = 0.5 C / 0.25 s = <b>2 A</b>.</p>',
         },
+        {
+          tipo: 'entrada',
+          enunciado: '¿Cuánta carga pasa en <b>1 minuto</b> por un punto donde circulan <b>150 mA</b>?',
+          unidad: 'C',
+          respuesta: 9,
+          pista: '<p>Despeja Q de I = Q/t. Y ojo: el minuto hay que pasarlo a segundos.</p>',
+          solucion: '<p>Q = I·t = 0.15 A × 60 s = <b>9 C</b>.</p>',
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Cuáles de estas afirmaciones sobre la corriente son <b>correctas</b>?',
+          opciones: [
+            'Necesita un camino cerrado para circular',
+            'Se mide en amperes',
+            'Es carga que se desplaza, no energía que se consume',
+            'Se gasta a medida que recorre el circuito',
+            'Solo existe si hay una batería química',
+          ],
+          correctas: [0, 1, 2],
+          explicacion: `<p>Las tres primeras son la definición misma. Las otras dos son los dos
+            malentendidos más comunes: la carga <b>no se gasta</b> (lo que se transforma es la
+            energía que transporta), y cualquier fuente de voltaje sirve, no solo una pila.</p>`,
+        },
       ],
     },
 
@@ -132,6 +155,27 @@ export default {
           correcta: 0,
           explicacion: `<p>La <b>altura</b> es lo que empuja. El caudal es la corriente y el
             estrechamiento es la resistencia. El volumen se parece más a la carga almacenada.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: '¿Cuánta energía entrega una fuente de <b>5 V</b> a <b>4 C</b> de carga?',
+          unidad: 'J',
+          respuesta: 20,
+          pista: '<p>El volt es joule por coulomb, así que E = V · Q.</p>',
+          solucion: '<p>E = 5 × 4 = <b>20 J</b>.</p>',
+        },
+        {
+          tipo: 'emparejar',
+          enunciado: 'Une cada magnitud con su unidad',
+          pares: [
+            { a: 'Voltaje', b: 'volt (V)' },
+            { a: 'Corriente', b: 'ampere (A)' },
+            { a: 'Resistencia', b: 'ohm (Ω)' },
+            { a: 'Carga', b: 'coulomb (C)' },
+            { a: 'Energía', b: 'joule (J)' },
+          ],
+          explicacion: `<p>Las unidades no son arbitrarias: <b>1 V = 1 J/C</b> y <b>1 A = 1 C/s</b>.
+            Cada una está definida a partir de las otras.</p>`,
         },
       ],
     },
@@ -199,6 +243,30 @@ export default {
           explicacion: `<p>El vidrio es un <b>aislante</b>: resistividad enorme. La plata es el mejor
             conductor metálico, seguida del cobre; el aluminio conduce algo peor, pero pesa mucho menos,
             y por eso se usa en líneas aéreas de transmisión.</p>`,
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Qué cambios hacen que la resistencia de un conductor <b>aumente</b>?',
+          opciones: [
+            'Hacerlo más largo',
+            'Hacerlo más delgado',
+            'Cambiarlo por un material de mayor resistividad',
+            'Hacerlo más grueso',
+            'Acortarlo',
+          ],
+          correctas: [0, 1, 2],
+          explicacion: `<p>En R = ρL/A suben la R las cosas que están en el <b>numerador</b>
+            (largo y resistividad) y bajarla las del <b>denominador</b> (área). Engrosar o acortar
+            siempre reduce la resistencia.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `Un cable tiene <b>4 Ω</b>. Si lo cortas por la mitad y usas solo un trozo,
+            ¿cuánta resistencia queda?`,
+          unidad: 'Ω',
+          respuesta: 2,
+          pista: '<p>La resistencia es proporcional al largo: la mitad de largo, la mitad de R.</p>',
+          solucion: '<p><b>2 Ω</b>. El material y la sección no cambiaron, solo el largo.</p>',
         },
       ],
     },
@@ -286,6 +354,128 @@ export default {
           huecos: [{ id: 'r', respuesta: 150, unidad: 'Ω', etiqueta: 'R' }],
           pista: '<p>R = V/I, con I en amperes: 100 mA = 0.1 A.</p>',
           solucion: '<p>R = 15 / 0.1 = <b>150 Ω</b>.</p>',
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Una resistencia de <b>4.7 kΩ</b> conectada a <b>9 V</b>. ¿Qué corriente circula, en mA?',
+          unidad: 'mA',
+          respuesta: 1.915,
+          tolerancia: 0.02,
+          pista: '<p>Atajo cómodo: <b>V ÷ kΩ = mA</b> directamente, sin convertir nada.</p>',
+          solucion: '<p>I = 9 / 4.7 = <b>1.91 mA</b> (o 9 / 4700 = 0.00191 A, lo mismo).</p>',
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Cuáles de estas expresiones son formas <b>válidas</b> de la ley de Ohm?',
+          opciones: ['V = I · R', 'I = V / R', 'R = V / I', 'I = R / V', 'V = R / I'],
+          correctas: [0, 1, 2],
+          explicacion: `<p>Las tres primeras son la misma ecuación despejada. Las dos últimas
+            invierten la división: dan unidades que no existen y números absurdos.</p>`,
+        },
+        {
+          tipo: 'completar',
+          enunciado: 'Esta resistencia tiene <b>4.5 V</b> encima. Completa la fuente y la resistencia.',
+          circuito: {
+            tipo: 'serie',
+            fuente: { hueco: { id: 'v', unidad: 'V', etiqueta: 'Fuente' } },
+            ramas: [{ nombre: 'R', hueco: { id: 'r', unidad: 'Ω', etiqueta: 'R' } }],
+            corriente: { etiqueta: 'I = 30 mA', velocidad: 1.2 },
+          },
+          huecos: [
+            { id: 'v', respuesta: 4.5, unidad: 'V', etiqueta: 'Fuente' },
+            { id: 'r', respuesta: 150, unidad: 'Ω', etiqueta: 'R' },
+          ],
+          pista: `<p>Si R es lo único en el lazo, todo el voltaje de la fuente cae sobre ella.
+            Después, R = V/I.</p>`,
+          solucion: `<p>La fuente entrega los mismos <b>4.5 V</b>, porque no hay nada más donde caer.<br>
+            R = 4.5 / 0.03 = <b>150 Ω</b>.</p>`,
+        },
+      ],
+    },
+
+    // ── 1.5 ──────────────────────────────────────────────────────────────
+    {
+      id: 'f-potencia',
+      titulo: 'La potencia',
+      xp: 30,
+      pasos: [
+        {
+          tipo: 'info',
+          emoji: '🔥',
+          titulo: 'Potencia: energía por segundo',
+          visual: () => laboratorioOhm({ v0: 12, r0: 220 }),
+          cuerpo: `
+            <p>La <b>potencia</b> es el ritmo al que se entrega o se consume energía. Se mide en
+            <b>watt (W)</b>: 1 W = 1 joule por segundo.</p>
+            <p class="formula">P = V · I</p>
+            <p>Y como V = I·R, hay dos formas más que salen solas y ahorran un paso:</p>
+            <p class="formula">P = I²·R &nbsp;&nbsp; P = V²/R</p>
+            <p class="dato">Esto es lo que decide si una resistencia aguanta o se quema. Una de
+            1/4 W no puede disipar 2 W, por muy correcto que esté el cálculo de corriente.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Por una resistencia pasan <b>0.5 A</b> con <b>12 V</b> encima. ¿Qué potencia disipa?',
+          unidad: 'W',
+          respuesta: 6,
+          pista: '<p>Tienes V e I directamente: P = V·I.</p>',
+          solucion: '<p>P = 12 × 0.5 = <b>6 W</b>. Esa energía se va en calor.</p>',
+        },
+        {
+          tipo: 'entrada',
+          enunciado: '¿Cuánta potencia disipa una resistencia de <b>100 Ω</b> con <b>200 mA</b>?',
+          unidad: 'W',
+          respuesta: 4,
+          pista: '<p>Tienes I y R, así que la forma cómoda es P = I²·R. Pasa los mA a A primero.</p>',
+          solucion: '<p>P = 0.2² × 100 = 0.04 × 100 = <b>4 W</b>. Ojo: la corriente va <b>al cuadrado</b>.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: 'Si <b>duplicas la corriente</b> por una resistencia, su potencia disipada…',
+          opciones: [
+            'Se multiplica por 4',
+            'Se duplica',
+            'Queda igual',
+            'Se reduce a la mitad',
+          ],
+          correcta: 0,
+          explicacion: `<p>En P = I²·R la corriente está <b>al cuadrado</b>: al doble de I,
+            cuatro veces la potencia. Por eso las sobrecorrientes queman componentes tan rápido.</p>`,
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: `Una ampolleta dice <b>60 W</b> a <b>220 V</b>. ¿Qué corriente consume?`,
+          opciones: ['273 mA', '13.2 A', '3.67 A', '60 mA'],
+          correcta: 0,
+          explicacion: `<p>I = P/V = 60 / 220 = <b>0.273 A = 273 mA</b>. La opción de 13.2 A sale
+            de multiplicar en vez de dividir.</p>`,
+        },
+        {
+          tipo: 'multiple',
+          pregunta: 'Tienes una resistencia de <b>1 kΩ</b> y <b>1/4 W</b>. ¿En qué casos <b>aguanta</b>?',
+          opciones: [
+            'Conectada a 5 V',
+            'Conectada a 12 V',
+            'Conectada a 24 V',
+            'Con 10 mA circulando',
+            'Con 30 mA circulando',
+          ],
+          correctas: [0, 1, 3],
+          explicacion: `<p>El límite es 0.25 W. Con P = V²/R: a 5 V son 25 mW ✓, a 12 V son 144 mW ✓,
+            pero a 24 V son <b>576 mW</b> ✗. Con P = I²·R: 10 mA dan 100 mW ✓ y 30 mA dan
+            <b>900 mW</b> ✗. En la práctica se deja margen y no se trabaja al límite.</p>`,
+        },
+        {
+          tipo: 'emparejar',
+          enunciado: 'Une cada fórmula con lo que necesitas conocer para usarla',
+          pares: [
+            { a: 'P = V · I', b: 'voltaje y corriente' },
+            { a: 'P = I² · R', b: 'corriente y resistencia' },
+            { a: 'P = V² / R', b: 'voltaje y resistencia' },
+            { a: 'I = V / R', b: 'voltaje y resistencia (da corriente)' },
+          ],
+          explicacion: `<p>Elegir la forma que calza con los datos que ya tienes ahorra un paso
+            y evita arrastrar errores de redondeo.</p>`,
         },
       ],
     },

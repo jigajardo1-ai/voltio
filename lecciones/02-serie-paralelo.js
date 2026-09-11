@@ -109,6 +109,33 @@ export default {
           solucion: `<p>R<sub>eq</sub> = 10 / 0.02 = 500 Ω. Como están en serie,
             R₂ = 500 − 150 = <b>350 Ω</b>.</p>`,
         },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la resistencia por la que cae <b>más voltaje</b>.',
+          circuito: {
+            tipo: 'serie',
+            fuente: { etiqueta: '12 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '220 Ω', id: 'r1' },
+              { nombre: 'R₂', valor: '680 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '100 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 0.7 },
+          },
+          correcta: 'r2',
+          nombreCorrecto: 'R₂ (680 Ω)',
+          explicacion: `<p>Misma corriente por las tres, así que V = I·R crece con R. La más grande
+            se lleva la mayor caída: 680 Ω de 1000 Ω totales, o sea el <b>68 % de los 12 V</b>.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `Tres resistencias en serie suman <b>2.2 kΩ</b>. Si dos valen <b>470 Ω</b> y
+            <b>1 kΩ</b>, ¿cuánto vale la tercera?`,
+          unidad: 'Ω',
+          respuesta: 730,
+          pista: '<p>En serie se suman, así que la que falta es el total menos las conocidas.</p>',
+          solucion: '<p>2200 − 470 − 1000 = <b>730 Ω</b>.</p>',
+        },
       ],
     },
 
@@ -222,6 +249,50 @@ export default {
           solucion: `<p>R₂ = 24 / 0.03 = <b>800 Ω</b>. Fíjate que R₁ no entra en el cálculo para nada:
             en paralelo cada rama es independiente.</p>`,
         },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la rama por la que circula <b>más corriente</b>.',
+          circuito: {
+            tipo: 'paralelo',
+            fuente: { etiqueta: '12 V' },
+            ramas: [
+              { nombre: 'R₁', valor: '1 kΩ', id: 'r1' },
+              { nombre: 'R₂', valor: '220 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '470 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 1.6 },
+          },
+          correcta: 'r2',
+          nombreCorrecto: 'R₂ (220 Ω)',
+          explicacion: `<p>Las tres ven los mismos 12 V, así que I = V/R es mayor en la <b>resistencia
+            más chica</b>: 12/220 = 54.5 mA, contra 25.5 mA en R₃ y apenas 12 mA en R₁.</p>
+            <p>Es justo al revés que en serie, y por eso conviene fijarse siempre primero en cómo
+            están conectadas.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: 'Tres resistencias de <b>600 Ω</b> en paralelo. ¿R equivalente?',
+          unidad: 'Ω',
+          respuesta: 200,
+          pista: '<p>Con <i>n</i> iguales en paralelo: R<sub>eq</sub> = R/n.</p>',
+          solucion: '<p>600/3 = <b>200 Ω</b>.</p>',
+        },
+        {
+          tipo: 'multiple',
+          pregunta: 'Marca todo lo que es <b>cierto</b> de dos resistencias en paralelo.',
+          opciones: [
+            'Tienen el mismo voltaje',
+            'La equivalente es menor que cualquiera de las dos',
+            'Si una se abre, la otra sigue funcionando',
+            'La corriente total es la suma de las dos ramas',
+            'Tienen la misma corriente',
+            'Las resistencias se suman',
+          ],
+          correctas: [0, 1, 2, 3],
+          explicacion: `<p>Las dos últimas son propiedades de la <b>serie</b>, no del paralelo.
+            Confundirlas es el error más frecuente del tema: en paralelo se comparte el voltaje
+            y se reparte la corriente.</p>`,
+        },
       ],
     },
 
@@ -304,6 +375,30 @@ export default {
           pista: `<p>Si R₂ se queda con 3 de 12 V, a R₁ le tocan 9 V. Las resistencias están en la
             misma proporción que los voltajes.</p>`,
           solucion: `<p>R₂/R₁ = V₂/V₁ = 3/9 = 1/3, así que R₂ = 3000/3 = <b>1000 Ω = 1 kΩ</b>.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `Divisor con <b>V = 20 V</b>, <b>R₁ = 1.5 kΩ</b> y <b>R₂ = 500 Ω</b>.
+            ¿Cuánto cae sobre <b>R₁</b>?`,
+          unidad: 'V',
+          respuesta: 15,
+          pista: '<p>V₁ = V · R₁/(R₁+R₂). El total es 2 kΩ.</p>',
+          solucion: '<p>V₁ = 20 × 1500/2000 = 20 × 0.75 = <b>15 V</b>. Y a R₂ le quedan 5 V.</p>',
+        },
+        {
+          tipo: 'alternativas',
+          pregunta: `Cambias las dos resistencias del divisor por otras <b>diez veces más grandes</b>,
+            manteniendo la proporción. ¿Qué pasa con el voltaje de salida?`,
+          opciones: [
+            'No cambia; lo que baja es la corriente que consume el divisor',
+            'Se hace diez veces más grande',
+            'Se hace diez veces más chico',
+            'Se va a cero',
+          ],
+          correcta: 0,
+          explicacion: `<p>La razón R₂/(R₁+R₂) es la misma, así que la salida no se mueve. Lo que sí
+            cae diez veces es la corriente, y con ella el consumo. Por eso los divisores de referencia
+            se hacen con valores altos.</p>`,
         },
       ],
     },
@@ -406,6 +501,90 @@ export default {
           solucion: `<p>R₁ = 5 / 0.05 = <b>100 Ω</b>.<br>
             El paralelo vale 400∥400 = 200 Ω, y ahí caen 0.05 × 200 = 10 V.<br>
             La fuente debe entregar 5 + 10 = <b>15 V</b>.</p>`,
+        },
+        {
+          tipo: 'ordenar',
+          enunciado: 'Ordena los pasos para resolver un circuito mixto.',
+          pasos: [
+            'Identificar qué bloques están en paralelo',
+            'Colapsar cada paralelo en una resistencia equivalente',
+            'Sumar lo que quedó en serie para tener R<sub>eq</sub> total',
+            'Calcular la corriente total con I = V / R<sub>eq</sub>',
+            'Repartir voltajes y corrientes hacia adentro',
+          ],
+          explicacion: `<p>La idea es siempre <b>de adentro hacia afuera</b> para simplificar, y
+            después <b>de afuera hacia adentro</b> para repartir. Saltarse el primer paso —mirar
+            bien quién está con quién— es lo que hace fallar el resto.</p>`,
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la resistencia que está <b>en serie con la fuente</b>.',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '18 V' },
+            serie: [{ nombre: 'R₁', valor: '220 Ω', id: 'r1' }],
+            paralelo: [
+              { nombre: 'R₂', valor: '330 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '470 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 1.1 },
+          },
+          correcta: 'r1',
+          nombreCorrecto: 'R₁',
+          explicacion: `<p>Por R₁ pasa <b>toda</b> la corriente antes de que se reparta: ese es el
+            sello de estar en serie con la fuente. R₂ y R₃ solo ven su parte.</p>`,
+        },
+        {
+          tipo: 'senalar',
+          enunciado: 'Toca la resistencia que está <b>en paralelo con R₂</b>.',
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '18 V' },
+            serie: [{ nombre: 'R₁', valor: '220 Ω', id: 'r1' }],
+            paralelo: [
+              { nombre: 'R₂', valor: '330 Ω', id: 'r2' },
+              { nombre: 'R₃', valor: '470 Ω', id: 'r3' },
+            ],
+            corriente: { velocidad: 1.1 },
+          },
+          correcta: 'r3',
+          nombreCorrecto: 'R₃',
+          explicacion: `<p>R₂ y R₃ tienen sus dos extremos conectados a los <b>mismos dos nodos</b>,
+            que es la definición de paralelo. R₁ está antes del punto donde el camino se divide.</p>`,
+        },
+        {
+          tipo: 'entrada',
+          enunciado: `En ese mismo circuito (18 V, R₁ = 220 Ω, R₂ = 330 Ω, R₃ = 470 Ω),
+            ¿cuál es la <b>resistencia equivalente total</b>?`,
+          circuito: {
+            tipo: 'mixto',
+            fuente: { etiqueta: '18 V' },
+            serie: [{ nombre: 'R₁', valor: '220 Ω' }],
+            paralelo: [{ nombre: 'R₂', valor: '330 Ω' }, { nombre: 'R₃', valor: '470 Ω' }],
+            corriente: { velocidad: 1.1 },
+          },
+          unidad: 'Ω',
+          respuesta: 413.875,
+          tolerancia: 0.02,
+          pista: '<p>Primero R₂∥R₃ con producto sobre suma, y a eso le sumas R₁.</p>',
+          solucion: `<p>R₂∥R₃ = (330 × 470)/800 = 155100/800 = 193.9 Ω.<br>
+            R<sub>eq</sub> = 220 + 193.9 = <b>413.9 Ω</b>.</p>`,
+        },
+        {
+          tipo: 'multiple',
+          pregunta: '¿Qué es cierto de <b>cualquier</b> circuito mixto como este?',
+          opciones: [
+            'La corriente por la resistencia en serie es la suma de las de las ramas',
+            'El bloque paralelo siempre vale menos que su rama más chica',
+            'La suma de las caídas de voltaje da el voltaje de la fuente',
+            'Todas las resistencias disipan la misma potencia',
+            'El voltaje sobre las dos ramas en paralelo es el mismo',
+          ],
+          correctas: [0, 1, 2, 4],
+          explicacion: `<p>La cuarta es falsa: la potencia depende de la corriente y la resistencia
+            de cada una, y ahí casi nunca coinciden. Las otras cuatro son consecuencias directas de
+            las leyes de Kirchhoff, y te sirven para <b>revisar</b> un resultado: si la suma de
+            caídas no da el voltaje de la fuente, hay un error en alguna parte.</p>`,
         },
       ],
     },

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voltio · banco de figuras</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <style>
+    body { padding: 20px; }
+    .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 16px; max-width: 1500px; margin: 0 auto; }
+    .caso { background: var(--superficie); border: 1px solid var(--borde); border-radius: 14px; padding: 10px; }
+    .caso h3 { font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-suave); margin: 0 0 6px; }
+    .caso > svg, .caso .lab > svg { outline: 1px dashed var(--mal); outline-offset: -1px; }
+    #informe { max-width: 1500px; margin: 0 auto 20px; font-family: var(--mono); font-size: .85rem; }
+    #informe .ok { background: var(--ok-suave); color: var(--ok-osc); padding: 12px 16px; border-radius: 10px; font-weight: 800; }
+    #informe .mal { background: var(--mal-suave); color: var(--mal-osc); padding: 12px 16px; border-radius: 10px; }
+    #informe li { margin: 3px 0; }
+  </style>
+</head>
+<body>
+  <h1>Banco visual de figuras</h1>
+  <p class="prosa">Cada figura se dibuja con el borde de su <code>viewBox</code> marcado en rojo.
+     El informe de arriba lista lo que se sale del lienzo y los rótulos que se pisan.</p>
+  <div id="informe"></div>
+  <div class="rejilla" id="rejilla"></div>
+
+  <script type="module">
+    // El CSS se cachea igual que los modulos; al iterar sobre estilos conviene
+    // forzarlo, si no un arreglo parece no haber funcionado.
+    {
+      const hoja = document.querySelector('link[rel="stylesheet"]');
+      hoja.href = `../css/app.css?t=${Date.now()}`;
+    }
+
+    // Import dinamico con marca de tiempo: al iterar sobre las figuras, el modulo
+    // cacheado del navegador hace creer que un arreglo no funciono.
+    const {
+      analogiaHidraulica, trianguloOhm, laboratorioOhm,
+      seccionConductor, serieVsParalelo, barrasDivisor,
+    } = await import(`../js/visuales.js?t=${Date.now()}`);
+
+    const CASOS = [
+      ['Hidráulica · sin resaltar', () => analogiaHidraulica()],
+      ['Hidráulica · voltaje', () => analogiaHidraulica('voltaje')],
+      ['Hidráulica · corriente', () => analogiaHidraulica('corriente')],
+      ['Hidráulica · resistencia', () => analogiaHidraulica('resistencia')],
+      ['Triángulo de Ohm', () => trianguloOhm()],
+      ['Triángulo · tapa V', () => trianguloOhm('V')],
+      ['Triángulo · tapa I', () => trianguloOhm('I')],
+      ['Triángulo · tapa R', () => trianguloOhm('R')],
+      ['Sección del conductor', () => seccionConductor()],
+      ['Serie vs paralelo', () => serieVsParalelo()],
+      ['Divisor · 100/200', () => barrasDivisor(12, 100, 200)],
+      ['Divisor · iguales', () => barrasDivisor(9, 1000, 1000)],
+      ['Divisor · extremo 10/990', () => barrasDivisor(5, 10, 990)],
+      ['Divisor · extremo 990/10', () => barrasDivisor(5, 990, 10)],
+      ['Laboratorio · inicial', () => laboratorioOhm()],
+      ['Laboratorio · R mínima', () => laboratorioOhm({ v0: 24, r0: 10 })],
+      ['Laboratorio · R máxima', () => laboratorioOhm({ v0: 1, r0: 1000 })],
+    ];
+
+    const rejilla = document.getElementById('rejilla');
+    for (const [nombre, construir] of CASOS) {
+      const caja = document.createElement('div');
+      caja.className = 'caso';
+      const h = document.createElement('h3');
+      h.textContent = nombre;
+      caja.append(h, construir());
+      rejilla.appendChild(caja);
+    }
+
+    /** Todo lo dibujado tiene que caber dentro del viewBox declarado. */
+    function desbordes() {
+      return [...document.querySelectorAll('.caso')].flatMap((caja) => {
+        const nombre = caja.querySelector('h3').textContent;
+        return [...caja.querySelectorAll('svg')].flatMap((svg) => {
+          const [, , W, H] = svg.getAttribute('viewBox').split(' ').map(Number);
+          return [...svg.querySelectorAll('text, rect, circle, path, line, polyline, foreignObject')]
+            // Los electrones los coloca animateMotion, que getBBox no ve: siempre
+            // se reportarian en el origen. Se excluyen para no ahogar el informe.
+            .filter((n) => !n.querySelector('animateMotion') && !n.classList.contains('cz-e'))
+            .map((n) => {
+              let b; try { b = n.getBBox(); } catch { return null; }
+              if (!b || (b.width === 0 && b.height === 0)) return null;
+              const holgura = 1;
+              if (b.x >= -holgura && b.y >= -holgura &&
+                  b.x + b.width <= W + holgura && b.y + b.height <= H + holgura) return null;
+              const etq = (n.textContent || '').trim().slice(0, 18);
+              return `${nombre} → <${n.tagName}${etq ? ` "${etq}"` : ''}> ` +
+                     `x ${b.x.toFixed(0)}…${(b.x + b.width).toFixed(0)} · ` +
+                     `y ${b.y.toFixed(0)}…${(b.y + b.height).toFixed(0)} (viewBox ${W}×${H})`;
+            }).filter(Boolean);
+        });
+      });
+    }
+
+    /** Dos rotulos encimados son siempre un error; dos trazos cruzados no. */
+    function colisiones() {
+      return [...document.querySelectorAll('.caso')].flatMap((caja) => {
+        const nombre = caja.querySelector('h3').textContent;
+        return [...caja.querySelectorAll('svg')].flatMap((svg) => {
+          const et = [...svg.querySelectorAll('text, foreignObject')].map((n) => {
+            let b; try { b = n.getBBox(); } catch { return null; }
+            if (!b || (b.width === 0 && b.height === 0)) return null;
+            return { b, txt: (n.textContent || '?').trim().slice(0, 16) };
+          }).filter(Boolean);
+
+          const out = [];
+          for (let i = 0; i < et.length; i++) {
+            for (let j = i + 1; j < et.length; j++) {
+              const a = et[i], c = et[j];
+              if (a.b.x < c.b.x + c.b.width - 2 && c.b.x < a.b.x + a.b.width - 2 &&
+                  a.b.y < c.b.y + c.b.height - 2 && c.b.y < a.b.y + a.b.height - 2) {
+                out.push(`${nombre} → "${a.txt}" ✕ "${c.txt}"`);
+              }
+            }
+          }
+          return out;
+        });
+      });
+    }
+
+    /**
+     * El halo de la ampolleta lleva blur, que getBBox no ve. Se comprueba a mano
+     * que el circulo mas su desenfoque quepan en el lienzo.
+     */
+    function haloFueraDeLienzo() {
+      return [...document.querySelectorAll('.viz-lab')].flatMap((svg) => {
+        const [, , W, H] = svg.getAttribute('viewBox').split(' ').map(Number);
+        const halo = svg.querySelector('.viz-halo');
+        if (!halo) return [];
+        const desenfoque = 9 * 3;               // blur(9px) se extiende ~3σ
+        const cx = +halo.getAttribute('cx'), cy = +halo.getAttribute('cy');
+        const r = +halo.getAttribute('r') + desenfoque;
+        const fuera = [];
+        if (cx - r < 0) fuera.push(`izquierda ${(cx - r).toFixed(0)}`);
+        if (cy - r < 0) fuera.push(`arriba ${(cy - r).toFixed(0)}`);
+        if (cx + r > W) fuera.push(`derecha ${(cx + r).toFixed(0)}>${W}`);
+        if (cy + r > H) fuera.push(`abajo ${(cy + r).toFixed(0)}>${H}`);
+        return fuera.length ? [`Laboratorio → halo se sale por: ${fuera.join(', ')}`] : [];
+      });
+    }
+
+    window.revisar = () => ({
+      desbordes: desbordes(),
+      colisiones: colisiones(),
+      halo: haloFueraDeLienzo(),
+    });
+
+    // Informe visible, para revisarlo sin abrir la consola.
+    const r = window.revisar();
+    const todos = [...r.desbordes, ...r.colisiones, ...r.halo];
+    const inf = document.getElementById('informe');
+    inf.innerHTML = todos.length
+      ? `<div class="mal"><b>${todos.length} problema(s):</b><ul>${todos.map((x) => `<li>${x}</li>`).join('')}</ul></div>`
+      : '<div class="ok">Sin desbordes ni rótulos encimados</div>';
+  </script>
+</body>
+</html>
